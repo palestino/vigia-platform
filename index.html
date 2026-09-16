@@ -1,927 +1,889 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>VIGIA — Plateforme OSINT</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --void:#070B14;--surface:#0D1526;--s2:#111D35;--s3:#162040;
-  --cyan:#00D4FF;--green:#00FF88;--amber:#FFB800;--red:#FF3366;
-  --tp:#E2E8F0;--ts:#94A3B8;--tm:#4B5563;
-  --border:rgba(255,255,255,.06);
-  --sw:260px;--th:60px;
-}
-html,body{height:100%;font-family:'Inter',sans-serif;background:var(--void);color:var(--tp);overflow:hidden}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:var(--surface)}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIGIA v2.0 - Plateforme de Veille</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #070B14;
+      --s1: #0D1526;
+      --s2: #111D33;
+      --s3: #162040;
+      --s4: #1C2952;
+      --border: rgba(0,212,255,.12);
+      --tp: #E8F0FE;
+      --tm: rgba(232,240,254,.55);
+      --ts: rgba(232,240,254,.35);
+      --cyan: #00D4FF;
+      --green: #00FF88;
+      --red: #FF3366;
+      --amber: #FFB800;
+      --purple: #A78BFA;
+    }
+    [data-theme="light"] {
+      --bg: #F0F4F8;
+      --s1: #FFFFFF;
+      --s2: #F8FAFC;
+      --s3: #EDF2F7;
+      --s4: #E2E8F0;
+      --border: rgba(0,100,200,.15);
+      --tp: #1A202C;
+      --tm: rgba(26,32,44,.6);
+      --ts: rgba(26,32,44,.4);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--tp);
+      transition: background 0.3s, color 0.3s;
+    }
+    .app-shell { display: none; height: 100vh; overflow: hidden; }
+    .sidebar { width: 260px; background: var(--s1); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .sidebar-header { padding: 20px; font-size: 24px; font-weight: 700; color: var(--cyan); border-bottom: 1px solid var(--border); }
+    .nav-section { margin-top: 20px; }
+    .nav-section-title { font-size: 12px; color: var(--tm); padding: 0 20px; margin-bottom: 10px; font-weight: 600; }
+    .nav-item { padding: 10px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--tp); text-decoration: none; transition: 0.2s; }
+    .nav-item:hover, .nav-item.active { background: var(--s2); color: var(--cyan); border-right: 3px solid var(--cyan); }
+    .badge-new { background: var(--green); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; margin-left: auto; }
+    .badge-num { background: var(--red); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; margin-left: auto; }
+    .main-content { flex: 1; overflow-y: auto; height: 100vh; position: relative; }
+    .topbar { height: 60px; background: var(--s1); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: sticky; top: 0; z-index: 10; }
+    .theme-toggle { background: transparent; border: 1px solid var(--border); color: var(--tp); padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+    .page { display: none; min-height: calc(100vh - 60px); padding: 20px; padding-bottom: 40px; }
+    .page.active { display: block; }
+    .login-container { display: flex; height: 100vh; align-items: center; justify-content: center; }
+    .login-box { background: var(--s1); padding: 40px; border-radius: 10px; border: 1px solid var(--border); width: 400px; text-align: center; }
+    .input-group { margin-bottom: 20px; text-align: left; }
+    .input-group input { width: 100%; padding: 10px; background: var(--s2); border: 1px solid var(--border); color: var(--tp); border-radius: 5px; margin-top: 5px; }
+    .btn { background: var(--cyan); color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; }
+    .btn:hover { opacity: 0.8; }
+    
+    .demo-banner { background: var(--amber); color: #000; padding: 10px; text-align: center; font-weight: bold; margin-bottom: 20px; border-radius: 5px; }
+    
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .card { background: var(--s1); border: 1px solid var(--border); padding: 20px; border-radius: 8px; }
+    
+    .chart-container { position: relative; height: 300px; width: 100%; }
+    
+    #map-leaflet { height: 600px; width: 100%; border-radius: 8px; border: 1px solid var(--border); }
+    
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--tm); font-size: 12px; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.open { display: flex; }
+    .modal-content { background: var(--s1); border: 1px solid var(--border); border-radius: 8px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; }
+    .close-modal { position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: var(--tp); font-size: 20px; cursor: pointer; }
+    
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+    .toast { background: var(--cyan); color: #000; padding: 12px 20px; border-radius: 4px; margin-top: 10px; font-weight: 500; }
+    
+    .article-item { background: var(--s1); border: 1px solid var(--border); padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+    .btn-add { background: var(--s3); border: 1px solid var(--border); color: var(--tp); padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    .btn-add:hover { background: var(--s4); }
 
-/* ─── VIEWS ─────────────────────────────────── */
-.view{display:none;width:100%;height:100vh}
-.view.active{display:flex}
-
-/* ─── LOGIN ─────────────────────────────────── */
-#v-login{align-items:center;justify-content:center;position:relative;overflow:hidden}
-.lg-grid{position:absolute;inset:0;opacity:.03;
-  background:linear-gradient(rgba(0,212,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.5) 1px,transparent 1px);
-  background-size:44px 44px}
-.blob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
-.b1{width:500px;height:500px;top:5%;left:10%;background:rgba(0,212,255,.06)}
-.b2{width:400px;height:400px;bottom:5%;right:5%;background:rgba(0,80,255,.07)}
-.lg-wrap{position:relative;z-index:5;width:420px;padding:0 16px;animation:fadeUp .4s ease}
-.lg-logo{text-align:center;margin-bottom:32px}
-.shield{display:inline-flex;width:68px;height:68px;border-radius:16px;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#00D4FF,#0044FF);box-shadow:0 0 30px rgba(0,212,255,.4);margin-bottom:14px}
-.shield svg{width:34px;height:34px;color:#070B14}
-.lg-title{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700}
-.lg-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--tm);margin-top:4px;text-transform:uppercase}
-.card{background:rgba(13,21,38,.88);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:12px;padding:32px}
-.card h2{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600}
-.card p{color:var(--ts);font-size:13px;margin-top:4px}
-.fg{margin-top:20px}
-.lb{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--tm);margin-bottom:7px}
-.inp{width:100%;padding:10px 14px;border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;
-  background:var(--s2);border:1px solid rgba(255,255,255,.08);color:var(--tp);outline:none;
-  transition:border-color .2s}
-.inp:focus{border-color:rgba(0,212,255,.4);box-shadow:0 0 0 3px rgba(0,212,255,.08)}
-.inp::placeholder{color:var(--tm)}
-.pw{position:relative}
-.pw .inp{padding-right:42px}
-.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--tm);line-height:0}
-.eye:hover{color:var(--ts)}
-.btn-p{width:100%;margin-top:22px;padding:11px;border:none;border-radius:7px;cursor:pointer;
-  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;
-  background:linear-gradient(135deg,#00D4FF,#0044FF);color:#070B14;
-  box-shadow:0 0 24px rgba(0,212,255,.3);transition:opacity .2s,transform .1s;
-  display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-p:hover{opacity:.9}
-.btn-p:active{transform:scale(.98)}
-.btn-p:disabled{opacity:.5;cursor:not-allowed}
-.err{display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:7px;margin-bottom:14px;
-  font-size:13px;background:rgba(255,51,102,.08);border:1px solid rgba(255,51,102,.25);color:#FDA4AF}
-.err.show{display:flex}
-.lg-foot{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.06)}
-.tls{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--tm)}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 8px rgba(0,255,136,.7);animation:pulse 2s ease-in-out infinite}
-.lg-foot p{font-size:11px;color:var(--tm);margin-top:7px;line-height:1.5}
-.classify{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tm);margin-top:14px}
-
-/* ─── APP SHELL ──────────────────────────────── */
-#v-app{flex-direction:row}
-.sidebar{width:var(--sw);flex-shrink:0;height:100vh;background:var(--surface);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;transition:width .3s;overflow:hidden;position:relative;z-index:20}
-.sidebar.col{width:68px}
-.sb-head{height:var(--th);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--border);gap:12px;flex-shrink:0}
-.logo{width:32px;height:32px;border-radius:7px;flex-shrink:0;
-  background:linear-gradient(135deg,#00D4FF,#0044FF);display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 14px rgba(0,212,255,.35)}
-.logo svg{width:16px;height:16px;color:#070B14}
-.brand{overflow:hidden;white-space:nowrap}
-.brand-n{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;line-height:1}
-.brand-s{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--tm);letter-spacing:.15em;margin-top:2px}
-.sb-nav{flex:1;overflow-y:auto;padding:12px 8px;display:flex;flex-direction:column;gap:14px}
-.sec-t{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--tm);
-  padding:0 12px 5px;white-space:nowrap;transition:opacity .3s}
-.sidebar.col .sec-t{opacity:0}
-.ni{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;cursor:pointer;
-  transition:all .2s;color:var(--ts);font-size:13px;font-weight:500;white-space:nowrap;position:relative}
-.ni:hover{background:rgba(255,255,255,.04);color:var(--tp)}
-.ni.on{background:rgba(0,212,255,.08);color:var(--cyan);box-shadow:inset 3px 0 0 var(--cyan)}
-.ni svg{width:15px;height:15px;flex-shrink:0}
-.nl{flex:1;overflow:hidden;transition:opacity .3s,width .3s}
-.sidebar.col .nl{opacity:0;width:0}
-.nb{min-width:18px;height:18px;border-radius:9px;background:var(--cyan);color:#070B14;
-  font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0;transition:opacity .3s}
-.nb.red{background:var(--red)}
-.sidebar.col .nb{opacity:0}
-.sb-foot{flex-shrink:0;padding:8px;border-top:1px solid var(--border)}
-.user-c{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.03);overflow:hidden}
-.av{width:30px;height:30px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#00D4FF,#0044FF);
-  display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px;color:#070B14}
-.ui{flex:1;min-width:0;transition:opacity .3s}
-.sidebar.col .ui{opacity:0}
-.un{font-size:12px;font-weight:600}
-.ur{font-size:10px;color:var(--tm)}
-.lo{background:none;border:none;cursor:pointer;color:var(--tm);padding:4px;transition:color .2s;line-height:0;flex-shrink:0}
-.lo:hover{color:var(--red)}
-.lo svg{width:14px;height:14px}
-.tog{position:absolute;right:-14px;top:76px;width:28px;height:28px;border-radius:50%;
-  background:var(--s3);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;z-index:30;color:var(--tm);box-shadow:0 2px 8px rgba(0,0,0,.4);transition:all .2s}
-.tog:hover{color:var(--cyan);border-color:rgba(0,212,255,.3)}
-.tog svg{width:12px;height:12px}
-
-/* ─── MAIN ───────────────────────────────────── */
-.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.topbar{height:var(--th);flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 20px;
-  background:rgba(13,21,38,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:10}
-.tb-menu{background:none;border:none;cursor:pointer;color:var(--tm);padding:6px;border-radius:6px;transition:all .2s;line-height:0}
-.tb-menu:hover{background:rgba(255,255,255,.04);color:var(--tp)}
-.sb-w{flex:1;max-width:480px;position:relative}
-.sb-w svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--tm);pointer-events:none}
-.sb-inp{width:100%;padding:8px 36px 8px 34px;border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;
-  background:rgba(7,11,20,.6);border:1px solid rgba(255,255,255,.07);color:var(--tp);outline:none;transition:border-color .2s}
-.sb-inp::placeholder{color:var(--tm)}
-.sb-inp:focus{border-color:rgba(0,212,255,.3)}
-.sb-kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--tm);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:2px 5px;border-radius:3px}
-.tb-r{display:flex;align-items:center;gap:6px;margin-left:auto}
-.pill{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.03);border:1px solid var(--border);font-size:11px;color:var(--ts);white-space:nowrap}
-.ib{background:none;border:none;cursor:pointer;color:var(--tm);padding:7px;border-radius:6px;transition:all .2s;position:relative;line-height:0}
-.ib:hover{background:rgba(255,255,255,.04);color:var(--tp)}
-.ib svg{width:16px;height:16px}
-.ndot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--surface);animation:pulse 1.5s ease-in-out infinite}
-.clk{padding:5px 10px;border-radius:6px;border:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tm)}
-.tbu{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:7px;cursor:pointer;transition:background .2s}
-.tbu:hover{background:rgba(255,255,255,.04)}
-
-/* ─── PAGES ──────────────────────────────────── */
-.page{flex:1;overflow-y:auto;padding:24px;display:none;flex-direction:column;gap:20px}
-.page.active{display:flex}
-.ph{display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
-.ptitle{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:-.3px}
-.psub{color:var(--ts);font-size:13px;margin-top:3px}
-.sys{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ts);font-family:'JetBrains Mono',monospace}
-
-/* ─── CARDS & WIDGETS ────────────────────────── */
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.g3{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.g31{display:grid;grid-template-columns:1fr 2fr;gap:16px}
-.st{display:flex;flex-direction:column;gap:16px}
-.sc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s}
-.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cc,var(--cyan)),transparent)}
-.sc:hover{border-color:rgba(255,255,255,.1);box-shadow:0 4px 24px rgba(0,0,0,.5)}
-.s-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
-.s-ico{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
-.s-ico svg{width:16px;height:16px}
-.s-d{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace}
-.s-d svg{width:12px;height:12px}
-.s-val{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;line-height:1;margin-bottom:2px}
-.s-lbl{font-size:13px;font-weight:600;margin-bottom:1px}
-.s-hint{font-size:11px;color:var(--tm)}
-.w{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;transition:border-color .2s}
-.w:hover{border-color:rgba(255,255,255,.09)}
-.wh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.wt{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600}
-.wt svg{width:15px;height:15px}
-.ws{font-size:11px;color:var(--tm);display:block;margin-top:2px}
-.wa{font-size:11px;color:var(--cyan);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif}
-.wa:hover{opacity:.7}
-
-/* ─── BADGES ─────────────────────────────────── */
-.bd{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
-.bd-cr{background:rgba(255,51,102,.12);color:var(--red);border:1px solid rgba(255,51,102,.3)}
-.bd-hi{background:rgba(255,140,0,.12);color:#FF8C00;border:1px solid rgba(255,140,0,.3)}
-.bd-me{background:rgba(255,184,0,.1);color:var(--amber);border:1px solid rgba(255,184,0,.25)}
-.bd-lo{background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.2)}
-.bd-ar{background:rgba(167,139,250,.1);color:#A78BFA;border:1px solid rgba(167,139,250,.2)}
-.bd-fr{background:rgba(96,165,250,.1);color:#60A5FA;border:1px solid rgba(96,165,250,.2)}
-.bd-en{background:rgba(52,211,153,.1);color:#34D399;border:1px solid rgba(52,211,153,.2)}
-.bd-es{background:rgba(251,146,60,.1);color:#FB923C;border:1px solid rgba(251,146,60,.2)}
-.imp{padding:2px 7px;border-radius:12px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace}
-
-/* ─── TABLE ──────────────────────────────────── */
-.tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--tm);border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap}
-td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--ts);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr{transition:background .15s;cursor:pointer}
-tr:hover td{background:rgba(255,255,255,.02);color:var(--tp)}
-.at{max-width:260px}
-.at .tit{font-size:12px;font-weight:500;color:var(--tp);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.at .tit.ar{direction:rtl;text-align:right}
-.at .sm{font-size:11px;color:var(--tm);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
-.at .ed{font-size:9px;color:var(--amber);font-family:'JetBrains Mono',monospace;margin-top:3px}
-.pos{color:var(--green);font-size:11px;font-weight:600}
-.neg{color:var(--red);font-size:11px;font-weight:600}
-.neu{color:var(--tm);font-size:11px}
-.cat{color:var(--cyan);font-size:11px}
-.tc{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tm);white-space:nowrap}
-.acts{display:flex;gap:4px;opacity:0;transition:opacity .2s}
-tr:hover .acts{opacity:1}
-.ab{background:none;border:none;cursor:pointer;color:var(--tm);padding:3px;border-radius:4px;transition:all .2s;line-height:0}
-.ab:hover{color:var(--cyan);background:rgba(0,212,255,.08)}
-.ab svg{width:13px;height:13px}
-
-/* ─── ALERTS WIDGET ──────────────────────────── */
-.al-l{display:flex;flex-direction:column;gap:10px}
-.al-i{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border-radius:8px;
-  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);cursor:pointer;transition:all .2s}
-.al-i:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08)}
-.ald{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.ald.cr{background:var(--red);box-shadow:0 0 8px rgba(255,51,102,.6)}
-.ald.hi{background:var(--amber);box-shadow:0 0 8px rgba(255,184,0,.6)}
-.ald.me{background:#60A5FA;box-shadow:0 0 8px rgba(96,165,250,.5)}
-.al-t{flex:1;font-size:12px;color:var(--tp);line-height:1.4}
-.al-m{display:flex;align-items:center;gap:6px;margin-top:5px}
-.mt{font-size:10px;color:var(--tm);font-family:'JetBrains Mono',monospace}
-
-/* ─── TRENDS ─────────────────────────────────── */
-.trl{display:flex;flex-direction:column;gap:10px}
-.tri{display:flex;align-items:center;gap:10px;cursor:pointer;padding:3px 0}
-.trk{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tm);width:16px;flex-shrink:0}
-.tri-info{flex:1;min-width:0}
-.tri-top{display:flex;align-items:center;gap:7px;margin-bottom:4px}
-.tri-n{font-size:13px;font-weight:500;color:var(--tp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s}
-.tri:hover .tri-n{color:var(--cyan)}
-.ety{font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 5px;border-radius:3px;border:1px solid}
-.et-P{color:#A78BFA;border-color:rgba(167,139,250,.25);background:rgba(167,139,250,.08)}
-.et-O{color:#60A5FA;border-color:rgba(96,165,250,.25);background:rgba(96,165,250,.08)}
-.et-G{color:var(--cyan);border-color:rgba(0,212,255,.25);background:rgba(0,212,255,.08)}
-.et-L{color:var(--green);border-color:rgba(0,255,136,.2);background:rgba(0,255,136,.06)}
-.pb{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
-.pf{height:100%;background:linear-gradient(90deg,var(--cyan),#0044FF);border-radius:2px;transition:width .6s ease}
-.tri-r{text-align:right;flex-shrink:0}
-.tri-c{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ts)}
-.tri-d{font-size:9px;color:var(--green);font-family:'JetBrains Mono',monospace}
-
-/* ─── SRC STATUS ─────────────────────────────── */
-.src-l{display:flex;flex-direction:column}
-.src-i{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.src-i:last-child{border-bottom:none}
-.src-n{flex:1;font-size:12px;color:var(--tp);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.src-tp{font-size:9px;color:var(--tm);font-family:'JetBrains Mono',monospace}
-.src-c{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ts)}
-.src-s{font-size:9px}
-.cdrow{display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
-
-/* ─── FEED ───────────────────────────────────── */
-.feed-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;
-  display:flex;gap:14px;cursor:pointer;transition:all .2s}
-.feed-item:hover{border-color:rgba(0,212,255,.15);transform:translateY(-1px)}
-.fi-main{flex:1;min-width:0}
-.fi-title{font-size:14px;font-weight:600;color:var(--tp);line-height:1.4;margin-bottom:6px}
-.fi-title.ar{direction:rtl;text-align:right}
-.fi-sum{font-size:12px;color:var(--ts);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.fi-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.fi-side{width:100px;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-
-/* ─── SEARCH ─────────────────────────────────── */
-.search-box{display:flex;gap:10px;margin-bottom:16px}
-.search-main{flex:1;padding:12px 16px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;
-  background:var(--s2);border:1px solid rgba(255,255,255,.1);color:var(--tp);outline:none;transition:border-color .2s}
-.search-main:focus{border-color:rgba(0,212,255,.4)}
-.search-main::placeholder{color:var(--tm)}
-.btn-s{padding:12px 20px;border:none;border-radius:8px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;
-  background:linear-gradient(135deg,#00D4FF,#0044FF);color:#070B14;box-shadow:0 0 16px rgba(0,212,255,.25);transition:opacity .2s}
-.btn-s:hover{opacity:.9}
-.filter-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.filt{padding:7px 14px;border-radius:6px;font-size:12px;background:var(--s2);border:1px solid var(--border);color:var(--ts);cursor:pointer;transition:all .2s}
-.filt:hover,.filt.on{background:rgba(0,212,255,.08);border-color:rgba(0,212,255,.3);color:var(--cyan)}
-
-/* ─── MAP ────────────────────────────────────── */
-.map-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;min-height:500px;
-  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.map-bg{position:absolute;inset:0;opacity:.04;font-size:10px;color:var(--cyan);
-  background:radial-gradient(ellipse at 30% 60%, rgba(0,212,255,.1) 0%, transparent 50%),
-             radial-gradient(ellipse at 70% 40%, rgba(0,102,255,.08) 0%, transparent 40%)}
-.map-dot{position:absolute;border-radius:50%;cursor:pointer;transition:transform .2s}
-.map-dot:hover{transform:scale(1.5)}
-.map-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;animation:ripple 2s ease-out infinite}
-@keyframes ripple{0%{box-shadow:0 0 0 0 currentColor;opacity:.6}100%{box-shadow:0 0 0 12px transparent;opacity:0}}
-.map-legend{position:absolute;bottom:16px;right:16px;background:rgba(13,21,38,.9);border:1px solid var(--border);border-radius:8px;padding:12px 16px}
-.map-legend h4{font-size:11px;font-weight:600;color:var(--tp);margin-bottom:8px}
-.map-legend-item{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ts);margin-bottom:4px}
-
-/* ─── ADMIN USERS ────────────────────────────── */
-.btn-add{padding:9px 16px;border:none;border-radius:7px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12px;
-  background:linear-gradient(135deg,#00D4FF,#0044FF);color:#070B14;box-shadow:0 0 12px rgba(0,212,255,.2);
-  display:flex;align-items:center;gap:6px;transition:opacity .2s}
-.btn-add:hover{opacity:.9}
-.btn-add svg{width:14px;height:14px}
-.role-p{background:rgba(167,139,250,.1);color:#A78BFA;border:1px solid rgba(167,139,250,.2);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
-.role-a{background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.2);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
-.role-u{background:rgba(148,163,184,.08);color:var(--ts);border:1px solid rgba(148,163,184,.15);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
-.act-on{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);padding:3px 8px;border-radius:20px}
-.act-off{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--tm);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:3px 8px;border-radius:20px}
-
-/* ─── STATS PAGE ─────────────────────────────── */
-.big-stat{text-align:center;padding:32px 20px}
-.big-stat .val{font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:700;line-height:1;margin-bottom:4px}
-.big-stat .lbl{font-size:13px;color:var(--ts)}
-
-/* ─── ANIMATIONS ─────────────────────────────── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes spin{to{transform:rotate(360deg)}}
-.fa{animation:fadeUp .3s ease}
-
-/* ─── NOTIF PANEL ────────────────────────────── */
-.np{position:absolute;right:0;top:calc(100% + 8px);width:310px;background:var(--s2);
-  border:1px solid rgba(255,255,255,.08);border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.7);z-index:50;display:none}
-.np.open{display:block;animation:fadeUp .15s ease}
-.np-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
-.np-l{max-height:280px;overflow-y:auto}
-.np-i{padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s;display:flex;gap:8px}
-.np-i:hover{background:rgba(255,255,255,.02)}
-.np-i:last-child{border-bottom:none}
-.np-t{font-size:12px;color:var(--tp);line-height:1.4;flex:1}
-.np-m{font-size:10px;color:var(--tm);font-family:'JetBrains Mono',monospace;margin-top:3px;display:flex;gap:8px}
-.np-f{padding:10px 16px;border-top:1px solid var(--border);text-align:center}
-.np-f a{font-size:12px;color:var(--cyan);text-decoration:none;cursor:pointer}
-
-/* ─── EXPORT MODAL ───────────────────────────── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex;animation:fadeUp .2s ease}
-.modal{background:var(--s2);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:28px;width:480px;max-width:95vw}
-.modal h3{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;margin-bottom:6px}
-.modal p{color:var(--ts);font-size:13px;margin-bottom:20px}
-.modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.mbt{padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:8px;cursor:pointer;
-  background:rgba(255,255,255,.03);text-align:center;transition:all .2s;color:var(--tp)}
-.mbt:hover{background:rgba(0,212,255,.08);border-color:rgba(0,212,255,.3);color:var(--cyan)}
-.mbt svg{width:24px;height:24px;margin:0 auto 6px;display:block}
-.mbt span{font-size:12px;font-weight:600;display:block}
-.mbt small{font-size:10px;color:var(--tm)}
-.modal-close{margin-top:16px;width:100%;padding:10px;border:1px solid var(--border);border-radius:7px;background:none;color:var(--ts);cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;transition:all .2s}
-.modal-close:hover{background:rgba(255,255,255,.04);color:var(--tp)}
-</style>
+    .bd { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+    .bd-ar { background: var(--purple); color: #fff; }
+    .bd-fr { background: var(--cyan); color: #000; }
+    .bd-en { background: var(--green); color: #000; }
+    .cat { background: var(--s3); padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+    .imp { background: var(--red); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+    .pos { color: var(--green); }
+    .neg { color: var(--red); }
+    .neu { color: var(--tm); }
+  </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     LOGIN
-══════════════════════════════════════════ -->
-<div id="v-login" class="view active">
-  <div class="lg-grid"></div>
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="lg-wrap">
-    <div class="lg-logo">
-      <div class="shield"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg></div>
-      <div class="lg-title">VIGIA</div>
-      <div class="lg-sub">Veille Informationnelle &amp; Géopolitique Intelligente</div>
+  <!-- Login Page -->
+  <div id="p-login" class="login-container active">
+    <div class="login-box">
+      <h1 style="color:var(--cyan); margin-bottom: 30px;">VIGIA v2.0</h1>
+      <div class="input-group">
+        <label>Nom d'utilisateur</label>
+        <input type="text" id="login-user" value="admin">
+      </div>
+      <div class="input-group">
+        <label>Mot de passe</label>
+        <div style="display:flex;gap:10px;">
+          <input type="password" id="login-pass" value="vigia2026">
+          <button class="btn-add" style="margin-top:5px;" onclick="togglePwd()">👁</button>
+        </div>
+      </div>
+      <button class="btn" onclick="login()">CONNEXION</button>
+      <div id="login-err" style="color:var(--red); margin-top:10px; display:none;">Identifiants incorrects</div>
     </div>
-    <div class="card">
-      <h2>Connexion sécurisée</h2>
-      <p>Accès réservé au personnel autorisé — Classification : USAGE RESTREINT</p>
-      <div class="err" id="err"><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg><span id="em">Identifiants incorrects</span></div>
-      <form id="lf">
-        <div class="fg"><label class="lb">Identifiant</label><input id="un" class="inp" type="text" placeholder="nom.utilisateur" value="admin"/></div>
-        <div class="fg"><label class="lb">Mot de passe</label>
-          <div class="pw"><input id="pw" class="inp" type="password" placeholder="••••••••••••" value="vigia2026"/>
-            <button type="button" class="eye" onclick="toggleEye()"><svg id="eyi" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button>
+  </div>
+
+  <!-- App Shell -->
+  <div id="app-shell" class="app-shell">
+    <div class="sidebar">
+      <div class="sidebar-header">VIGIA</div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">VEILLE</div>
+        <div class="nav-item active" onclick="showPage('p-dashboard')">Tableau de bord</div>
+        <div class="nav-item" onclick="showPage('p-feed')">Flux en direct</div>
+        <div class="nav-item" onclick="showPage('p-search')">Recherche</div>
+        <div class="nav-item" onclick="showPage('p-map')">Cartographie</div>
+        <div class="nav-item" onclick="showPage('p-favorites')">Favoris</div>
+        <div class="nav-item" onclick="showPage('p-social')">Réseaux sociaux <span class="badge-new">NEW</span></div>
+        <div class="nav-item" onclick="showPage('p-videos')">Vidéos <span class="badge-new">NEW</span></div>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">ANALYSE</div>
+        <div class="nav-item" onclick="showPage('p-alerts')">Alertes <span class="badge-num">3</span></div>
+        <div class="nav-item" onclick="showPage('p-reports')">Rapports</div>
+        <div class="nav-item" onclick="showPage('p-export')">Exporter</div>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">ADMINISTRATION</div>
+        <div class="nav-item" onclick="showPage('p-admin-users')">Utilisateurs</div>
+        <div class="nav-item" onclick="showPage('p-admin-sources')">Sources</div>
+        <div class="nav-item" onclick="showPage('p-admin-stats')">Statistiques</div>
+        <div class="nav-item" onclick="showPage('p-admin-audit')">Journaux d audit</div>
+      </div>
+    </div>
+    
+    <div class="main-content">
+      <div class="topbar">
+        <div id="page-title" style="font-weight:bold;font-size:18px;">Tableau de bord</div>
+        <div style="display:flex; gap:15px; align-items:center;">
+          <button class="theme-toggle" onclick="toggleTheme()" id="theme-icon">🌙</button>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:30px;height:30px;background:var(--cyan);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;">A</div>
+            <span>Admin</span>
+            <button class="theme-toggle" onclick="logout()" title="Déconnexion" style="color:var(--red);">⏻</button>
           </div>
         </div>
-        <button id="lb" class="btn-p" type="submit"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>Se connecter</button>
-      </form>
-      <div class="lg-foot">
-        <div class="tls"><div class="dot"></div>Connexion chiffrée TLS 1.3 — Session 30 minutes</div>
-        <p>Ce système est réservé aux utilisateurs autorisés. Toutes les actions sont journalisées (RS-006).</p>
       </div>
-    </div>
-    <div class="classify">VIGIA Platform v1.0.0 — Usage Restreint — © 2026</div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     APPLICATION
-══════════════════════════════════════════ -->
-<div id="v-app" class="view">
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sb">
-    <div class="sb-head">
-      <div class="logo"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg></div>
-      <div class="brand"><div class="brand-n">VIGIA</div><div class="brand-s">OSINT PLATFORM</div></div>
-    </div>
-    <nav class="sb-nav">
-      <div><div class="sec-t">Veille</div>
-        <div class="ni on" onclick="go('dashboard',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg><span class="nl">Tableau de bord</span></div>
-        <div class="ni" onclick="go('feed',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12.75 19.5v-.75a7.5 7.5 0 00-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg><span class="nl">Flux en direct</span><span class="nb">24</span></div>
-        <div class="ni" onclick="go('search',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z"/></svg><span class="nl">Recherche</span></div>
-        <div class="ni" onclick="go('map',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z"/></svg><span class="nl">Cartographie</span></div>
-        <div class="ni" onclick="go('favorites',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg><span class="nl">Favoris</span></div>
-      </div>
-      <div><div class="sec-t">Analyse</div>
-        <div class="ni" onclick="go('alerts',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg><span class="nl">Alertes</span><span class="nb red">3</span></div>
-        <div class="ni" onclick="go('reports',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><span class="nl">Rapports</span></div>
-        <div class="ni" onclick="go('export',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="nl">Exporter</span></div>
-      </div>
-      <div><div class="sec-t">Administration</div>
-        <div class="ni" onclick="go('admin-users',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg><span class="nl">Utilisateurs</span></div>
-        <div class="ni" onclick="go('admin-sources',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375"/></svg><span class="nl">Sources</span></div>
-        <div class="ni" onclick="go('admin-stats',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg><span class="nl">Statistiques</span></div>
-        <div class="ni" onclick="go('admin-audit',this)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/></svg><span class="nl">Journaux d'audit</span></div>
-      </div>
-    </nav>
-    <div class="sb-foot">
-      <div class="user-c">
-        <div class="av">KT</div>
-        <div class="ui"><div class="un">Karim TAHIRI</div><div class="ur">Analyste Senior — Admin</div></div>
-        <button class="lo" onclick="logout()" title="Déconnexion"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg></button>
-      </div>
-    </div>
-    <div class="tog" onclick="toggleSB()"><svg id="ti" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg></div>
-  </aside>
-
-  <!-- MAIN -->
-  <div class="main">
-    <header class="topbar">
-      <button class="tb-menu" onclick="toggleSB()"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
-      <div class="sb-w"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z"/></svg><input class="sb-inp" id="gsearch" placeholder="Recherche rapide — mots-clés, entités, sources…" onkeydown="if(event.key==='Enter'){go('search',null);document.getElementById('search-q').value=this.value;runSearch()}"/><span class="sb-kbd">↵</span></div>
-      <div class="tb-r">
-        <div class="pill"><div class="dot"></div>Collecte active</div>
-        <button class="ib" title="Actualiser" onclick="showToast('Données actualisées')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg></button>
-        <div style="position:relative">
-          <button class="ib" id="nb-btn" onclick="toggleNotif()"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg><div class="ndot"></div></button>
-          <div class="np" id="notif-panel">
-            <div class="np-head"><span style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600">Alertes</span><span class="bd bd-cr">3</span></div>
-            <div class="np-l">
-              <div class="np-i"><div class="ald cr" style="margin-top:4px;flex-shrink:0"></div><div><div class="np-t">Discours Royal — Question du Sahara</div><div class="np-m"><span>4 min</span><span>• Politique</span></div></div></div>
-              <div class="np-i"><div class="ald hi" style="margin-top:4px;flex-shrink:0"></div><div><div class="np-t">Réunion d'urgence Conseil de Sécurité ONU</div><div class="np-m"><span>23 min</span><span>• Diplomatie</span></div></div></div>
-              <div class="np-i"><div class="ald me" style="margin-top:4px;flex-shrink:0"></div><div><div class="np-t">Rapport sécuritaire — Zone Sahel</div><div class="np-m"><span>1h 12</span><span>• Sécurité</span></div></div></div>
+      
+      <!-- Pages -->
+      <div id="p-dashboard" class="page active">
+        <div class="demo-banner">⚠️ MODE DÉMONSTRATION — Données simulées à des fins de présentation</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
+          <div class="card" style="border-left:3px solid var(--cyan)">
+            <div style="font-size:12px;color:var(--tm);margin-bottom:8px;text-transform:uppercase;">Articles (24h)</div>
+            <div style="font-size:36px;font-weight:700;color:var(--cyan);">1 245</div>
+            <div style="font-size:12px;color:var(--green);margin-top:4px;">↑ +12% vs hier</div>
+          </div>
+          <div class="card" style="border-left:3px solid var(--red)">
+            <div style="font-size:12px;color:var(--tm);margin-bottom:8px;text-transform:uppercase;">Alertes critiques</div>
+            <div style="font-size:36px;font-weight:700;color:var(--red);">3</div>
+            <div style="font-size:12px;color:var(--amber);margin-top:4px;">2 non lues</div>
+          </div>
+          <div class="card" style="border-left:3px solid var(--green)">
+            <div style="font-size:12px;color:var(--tm);margin-bottom:8px;text-transform:uppercase;">Sources actives</div>
+            <div style="font-size:36px;font-weight:700;color:var(--green);">428</div>
+            <div style="font-size:12px;color:var(--tm);margin-top:4px;">sur 430 configurées</div>
+          </div>
+          <div class="card" style="border-left:3px solid var(--purple)">
+            <div style="font-size:12px;color:var(--tm);margin-bottom:8px;text-transform:uppercase;">Publications sociales</div>
+            <div style="font-size:36px;font-weight:700;color:var(--purple);">8 420</div>
+            <div style="font-size:12px;color:var(--green);margin-top:4px;">↑ +34% vs hier</div>
+          </div>
+          <div class="card" style="border-left:3px solid var(--amber)">
+            <div style="font-size:12px;color:var(--tm);margin-bottom:8px;text-transform:uppercase;">Couverture géo.</div>
+            <div style="font-size:36px;font-weight:700;color:var(--amber);">47</div>
+            <div style="font-size:12px;color:var(--tm);margin-top:4px;">pays couverts</div>
+          </div>
+        </div>
+        <div class="card-grid" style="grid-template-columns:2fr 1fr;">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <h3>Volume d'articles (7 jours)</h3>
+              <span style="font-size:12px;color:var(--tm);">Mis à jour à 09:42</span>
             </div>
-            <div class="np-f"><a onclick="go('alerts',null)">Voir toutes les alertes →</a></div>
+            <div class="chart-container"><canvas id="chart-vol"></canvas></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:16px;">Répartition par langue</h3>
+            <div class="chart-container"><canvas id="chart-lang"></canvas></div>
           </div>
         </div>
-        <div class="clk" id="clk">--:--</div>
-        <div class="tbu"><div class="av" style="width:28px;height:28px;font-size:10px">KT</div><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
+        <div class="card-grid" style="grid-template-columns:1fr 1fr;margin-top:20px;">
+          <div class="card">
+            <h3 style="margin-bottom:16px;">Tendances — Entités clés</h3>
+            <div id="trend-list"></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:16px;">Dernières alertes</h3>
+            <div id="dash-alerts"></div>
+          </div>
+        </div>
       </div>
-    </header>
-
-    <!-- ══ DASHBOARD ══ -->
-    <div id="p-dashboard" class="page active fa">
-      <div class="ph"><div><div class="ptitle">Tableau de bord</div><div class="psub">Vue d'ensemble en temps réel — actualisation toutes les 5 minutes</div></div><div class="sys"><div class="dot"></div>Système opérationnel</div></div>
-      <div class="g4">
-        <div class="sc" style="--cc:var(--cyan)"><div class="s-top"><div class="s-ico"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00D4FF"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6V7.5z"/></svg></div><div class="s-d" style="color:#00FF88"><svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>+12.4%</div></div><div class="s-val" style="color:var(--cyan)">4 218</div><div class="s-lbl">Articles (24h)</div><div class="s-hint">vs hier • MAJ: 04:17</div></div>
-        <div class="sc" style="--cc:var(--green)"><div class="s-top"><div class="s-ico"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00FF88"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></div><div class="s-d" style="color:#00FF88"><svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>+8.1%</div></div><div class="s-val" style="color:var(--green)">28 543</div><div class="s-lbl">Articles (7 jours)</div><div class="s-hint">vs semaine précédente</div></div>
-        <div class="sc" style="--cc:var(--amber)"><div class="s-top"><div class="s-ico"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#FFB800"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375"/></svg></div><div class="s-d" style="color:#FF3366"><svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>18 err.</div></div><div class="s-val" style="color:var(--amber)">412/430</div><div class="s-lbl">Sources actives</div><div class="s-hint">18 en erreur — circuit breaker</div></div>
-        <div class="sc" style="--cc:var(--red)"><div class="s-top"><div class="s-ico"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#FF3366"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg></div><div class="s-d" style="color:#FF3366"><svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>2 critiques</div></div><div class="s-val" style="color:var(--red)">3</div><div class="s-lbl">Alertes non lues</div><div class="s-hint">Voir alertes →</div></div>
+      
+      <div id="p-feed" class="page">
+        <div class="demo-banner">MODE DÉMONSTRATION — Données simulées</div>
+        <div style="display:flex;gap:10px;margin-bottom:20px;">
+          <button class="btn-add">Tous</button>
+          <button class="btn-add">Politique</button>
+          <button class="btn-add">Sécurité</button>
+          <button class="btn-add">Diplomatie</button>
+          <button class="btn-add">Économie</button>
+          <button class="btn-add">AR</button>
+          <button class="btn-add">FR</button>
+          <button class="btn-add">EN</button>
+        </div>
+        <div id="feed-list"></div>
       </div>
-      <div class="g3">
-        <div class="w"><div class="wh"><div><div class="wt"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00D4FF"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>Volume de collecte</div><span class="ws">Articles par source — 7 jours</span></div></div><canvas id="vc" height="200"></canvas></div>
-        <div class="w"><div class="wh"><div><div class="wt">Répartition linguistique</div><span class="ws">Dernières 24h — 4 218 articles</span></div></div><canvas id="lc" height="130"></canvas><div style="display:flex;flex-direction:column;gap:5px;margin-top:12px">
-          <div style="display:flex;justify-content:space-between;font-size:11px"><div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#A78BFA"></div><span style="color:var(--ts)">Arabe</span></div><span style="font-family:monospace;color:#A78BFA">39.8%</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px"><div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#60A5FA"></div><span style="color:var(--ts)">Français</span></div><span style="font-family:monospace;color:#60A5FA">26.5%</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px"><div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#34D399"></div><span style="color:var(--ts)">Anglais</span></div><span style="font-family:monospace;color:#34D399">21.1%</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px"><div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#FB923C"></div><span style="color:var(--ts)">Espagnol</span></div><span style="font-family:monospace;color:#FB923C">7.3%</span></div>
-        </div></div>
+      
+      <div id="p-search" class="page">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <input type="text" id="search-input" placeholder="Rechercher : Maroc, Sahara, diplomatie..." style="flex:1;min-width:200px;padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--s1);color:var(--tp);" onkeydown="if(event.key==='Enter')runSearch()">
+          <select id="search-type" style="padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--s1);color:var(--tp);">
+            <option value="simple">Simple</option><option value="bool">Booléenne</option><option value="sem">Sémantique</option>
+          </select>
+          <select id="search-source" style="padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--s1);color:var(--tp);">
+            <option value="all">Tous les types</option><option value="article">Articles</option><option value="social">Réseaux sociaux</option><option value="video">Vidéos</option>
+          </select>
+          <button class="btn" style="width:auto;" onclick="runSearch()">🔍 Rechercher</button>
+        </div>
+        <div id="search-results-meta" style="font-size:13px;color:var(--tm);margin-bottom:12px;"></div>
+        <div id="search-results"></div>
       </div>
-      <div class="g31">
-        <div class="st">
-          <div class="w"><div class="wh"><div class="wt" style="color:var(--red)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>Alertes actives</div><button class="wa" onclick="go('alerts',null)">Tout voir →</button></div>
-            <div class="al-l">
-              <div class="al-i"><div class="ald cr"></div><div><div class="al-t">Discours Royal sur la question du Sahara</div><div class="al-m"><span class="bd bd-cr">CRITIQUE</span><span class="mt">MAP • 4 min</span></div></div></div>
-              <div class="al-i"><div class="ald hi"></div><div><div class="al-t">Réunion d'urgence — Conseil de Sécurité ONU</div><div class="al-m"><span class="bd bd-hi">HAUTE</span><span class="mt">AFP • 23 min</span></div></div></div>
-              <div class="al-i"><div class="ald me"></div><div><div class="al-t">Rapport sécuritaire — Zone Sahel</div><div class="al-m"><span class="bd bd-me">MOYENNE</span><span class="mt">Reuters • 1h 12</span></div></div></div>
+      
+      <div id="p-map" class="page">
+        <div class="demo-banner">MODE DÉMONSTRATION — Données simulées</div>
+        <div id="map-leaflet"></div>
+      </div>
+      
+      <div id="p-favorites" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2>Favoris <span style="font-size:14px;color:var(--tm);" id="fav-count">(0 éléments)</span></h2>
+        </div>
+        <div id="fav-list">
+          <div class="card" style="text-align:center;padding:40px;color:var(--tm);">
+            <div style="font-size:40px;margin-bottom:12px;">⭐</div>
+            <div>Aucun favori enregistré.</div>
+            <div style="font-size:13px;margin-top:8px;">Cliquez sur "Ouvrir l'article" puis ajoutez-le à vos favoris.</div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="p-social" class="page">
+        <div class="demo-banner">Données simulées — API réelles à connecter</div>
+        <div id="social-list" class="card-grid"></div>
+      </div>
+      
+      <div id="p-videos" class="page">
+        <div class="demo-banner">Données simulées — API réelles à connecter</div>
+        <div id="video-list" class="card-grid"></div>
+      </div>
+      
+      <div id="p-alerts" class="page">
+        <div class="card">
+          <table>
+            <thead><tr><th>Priorité</th><th>Titre</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody id="alerts-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div id="p-reports" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2>Rapports</h2>
+          <button class="btn" style="width:auto;" onclick="openReportModal()">+ Nouveau rapport</button>
+        </div>
+        <div class="card" style="margin-bottom:20px;">
+          <table>
+            <thead><tr><th>Titre</th><th>Période</th><th>Catégories</th><th>Créé le</th><th>Actions</th></tr></thead>
+            <tbody id="reports-tbody">
+              <tr>
+                <td>Rapport mensuel — Août 2026</td><td>01/08 – 31/08/2026</td><td>Politique, Diplomatie</td><td>01/09/2026</td>
+                <td><button class="btn-add" onclick="showToast('Téléchargement du rapport...');exportPDF()">📥 Télécharger</button></td>
+              </tr>
+              <tr>
+                <td>Synthèse hebdomadaire S36</td><td>02/09 – 08/09/2026</td><td>Sécurité, Économie</td><td>09/09/2026</td>
+                <td><button class="btn-add" onclick="showToast('Téléchargement du rapport...');exportPDF()">📥 Télécharger</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Modal Rapport -->
+      <div id="report-modal" class="modal" onclick="if(event.target.id==='report-modal')closeReportModal()">
+        <div class="modal-content" style="max-width:520px;">
+          <button class="close-modal" onclick="closeReportModal()">×</button>
+          <div style="padding:24px;">
+            <h2 style="margin-bottom:20px;color:var(--cyan);">Nouveau rapport</h2>
+            <div class="input-group">
+              <label style="font-size:13px;color:var(--tm);">Titre du rapport</label>
+              <input type="text" id="rpt-title" placeholder="Ex: Synthèse hebdomadaire S37" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--border);color:var(--tp);border-radius:5px;margin-top:6px;">
             </div>
-          </div>
-          <div class="w"><div class="wh"><div class="wt"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00D4FF"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375"/></svg>État de collecte</div></div>
-            <div class="src-l">
-              <div class="src-i"><div class="ald" style="background:var(--green);box-shadow:0 0 6px rgba(0,255,136,.5);flex-shrink:0;margin-top:0"></div><div style="flex:1;min-width:0"><div class="src-n">MAP (Agence Maroc)</div><div class="src-tp">API • 5 min</div></div><div><div class="src-c">128</div><div class="src-s" style="color:var(--green)">OK</div></div></div>
-              <div class="src-i"><div class="ald" style="background:var(--green);box-shadow:0 0 6px rgba(0,255,136,.5);flex-shrink:0;margin-top:0"></div><div style="flex:1;min-width:0"><div class="src-n">AFP</div><div class="src-tp">RSS • 5 min</div></div><div><div class="src-c">94</div><div class="src-s" style="color:var(--green)">OK</div></div></div>
-              <div class="src-i"><div class="ald" style="background:var(--green);box-shadow:0 0 6px rgba(0,255,136,.5);flex-shrink:0;margin-top:0"></div><div style="flex:1;min-width:0"><div class="src-n">Reuters</div><div class="src-tp">RSS • 5 min</div></div><div><div class="src-c">87</div><div class="src-s" style="color:var(--green)">OK</div></div></div>
-              <div class="src-i"><div class="ald" style="background:var(--amber);box-shadow:0 0 6px rgba(255,184,0,.5);flex-shrink:0;margin-top:0"></div><div style="flex:1;min-width:0"><div class="src-n">Le Monde</div><div class="src-tp">Scraping • 15 min</div></div><div><div class="src-c">42</div><div class="src-s" style="color:var(--amber)">Dégradé</div></div></div>
-              <div class="src-i"><div class="ald" style="background:var(--red);box-shadow:0 0 6px rgba(255,51,102,.5);flex-shrink:0;margin-top:0"></div><div style="flex:1;min-width:0"><div class="src-n">Sky News Arabia</div><div class="src-tp">RSS • 5 min</div></div><div><div class="src-c">0</div><div class="src-s" style="color:var(--red)">Erreur</div></div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+              <div class="input-group">
+                <label style="font-size:13px;color:var(--tm);">Date début</label>
+                <input type="date" id="rpt-start" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--border);color:var(--tp);border-radius:5px;margin-top:6px;">
+              </div>
+              <div class="input-group">
+                <label style="font-size:13px;color:var(--tm);">Date fin</label>
+                <input type="date" id="rpt-end" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--border);color:var(--tp);border-radius:5px;margin-top:6px;">
+              </div>
             </div>
-            <div class="cdrow"><span style="font-size:11px;color:var(--tm)">Prochaine collecte</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan)" id="cd">03:12</span></div>
+            <div class="input-group" style="margin-bottom:20px;">
+              <label style="font-size:13px;color:var(--tm);">Catégories</label>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;" id="rpt-cats">
+                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" value="Politique" checked> Politique</label>
+                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" value="Sécurité"> Sécurité</label>
+                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" value="Diplomatie" checked> Diplomatie</label>
+                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" value="Économie"> Économie</label>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn" onclick="generateReport()">Générer le rapport</button>
+              <button class="btn-add" onclick="closeReportModal()">Annuler</button>
+            </div>
+            <div id="rpt-error" style="color:var(--red);font-size:13px;margin-top:10px;display:none;"></div>
           </div>
         </div>
-        <div class="w"><div class="wh"><div><div class="wt">Articles les plus importants</div><span class="ws">Classés par score d'importance IA</span></div><button class="wa" onclick="go('feed',null)">Flux complet →</button></div>
-          <div class="tw"><table><thead><tr><th>Imp.</th><th>Article</th><th>Source</th><th>Lang.</th><th>Sentiment</th><th>Catégorie</th><th>Publié</th><th></th></tr></thead><tbody>
-            <tr><td><span class="imp" style="background:rgba(255,51,102,.12);color:var(--red);border:1px solid rgba(255,51,102,.25)">94</span></td><td class="at"><div class="tit ar">تخص جلالة الملك محمد السادس اليوم البرلمان بخطاب سامي</div><div class="sm">خطاب ملكي حول المحاور الكبرى للعمل الحكومي للسنة التشريعية</div><div class="ed">⚡ Guide éditorial appliqué</div></td><td><div style="font-size:11px;font-weight:600">MAP</div><div style="font-family:monospace;font-size:10px;color:var(--tm)">MA</div></td><td><span class="bd bd-ar">AR</span></td><td><span class="pos">Positif</span></td><td><span class="cat">Politique</span></td><td class="tc">12 min</td><td><div class="acts"><button class="ab"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg></button></div></td></tr>
-            <tr><td><span class="imp" style="background:rgba(255,140,0,.12);color:#FF8C00;border:1px solid rgba(255,140,0,.25)">88</span></td><td class="at"><div class="tit">UN Security Council holds emergency session on Western Sahara</div><div class="sm">Le CS-ONU a tenu une session d'urgence sur les développements diplomatiques</div></td><td><div style="font-size:11px;font-weight:600">Reuters</div><div style="font-family:monospace;font-size:10px;color:var(--tm)">US</div></td><td><span class="bd bd-en">EN</span></td><td><span class="neu">Neutre</span></td><td><span class="cat">Diplomatie</span></td><td class="tc">34 min</td><td><div class="acts"><button class="ab"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg></button></div></td></tr>
-            <tr><td><span class="imp" style="background:rgba(255,184,0,.1);color:var(--amber);border:1px solid rgba(255,184,0,.25)">76</span></td><td class="at"><div class="tit">La France renforce sa coopération sécuritaire avec le Maghreb</div><div class="sm">Paris annonce un programme incluant partage de renseignements et formation</div></td><td><div style="font-size:11px;font-weight:600">Le Monde</div><div style="font-family:monospace;font-size:10px;color:var(--tm)">FR</div></td><td><span class="bd bd-fr">FR</span></td><td><span class="neu">Neutre</span></td><td><span class="cat">Sécurité</span></td><td class="tc">1h 08</td><td><div class="acts"><button class="ab"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg></button></div></td></tr>
-            <tr><td><span class="imp" style="background:rgba(0,255,136,.06);color:var(--green);border:1px solid rgba(0,255,136,.2)">71</span></td><td class="at"><div class="tit ar">مجلس الأمن يناقش الوضع الأمني في منطقة الساحل</div><div class="sm">ناقش مجلس الأمن الوضع الأمني المتدهور في منطقة الساحل</div></td><td><div style="font-size:11px;font-weight:600">الجزيرة</div><div style="font-family:monospace;font-size:10px;color:var(--tm)">QA</div></td><td><span class="bd bd-ar">AR</span></td><td><span class="neg">Négatif</span></td><td><span class="cat">Sécurité</span></td><td class="tc">2h 15</td><td><div class="acts"><button class="ab"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg></button></div></td></tr>
-          </tbody></table></div>
+      </div>
+      
+      <div id="p-export" class="page">
+        <div class="card-grid">
+          <div class="card" style="text-align:center;">
+            <h3>Export CSV</h3><br>
+            <button class="btn" onclick="exportCSV()">Télécharger</button>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h3>Export JSON</h3><br>
+            <button class="btn" onclick="exportJSON()">Télécharger</button>
+          </div>
+          <div class="card" style="text-align:center;">
+            <h3>Export PDF</h3><br>
+            <button class="btn" onclick="exportPDF()">Imprimer / PDF</button>
+          </div>
+          <div class="card" style="text-align:center;opacity:0.5;">
+            <h3>Word / Excel</h3><br>
+            <button class="btn" disabled>Bientôt disponible</button>
+          </div>
         </div>
       </div>
-      <div class="g2">
-        <div class="w"><div class="wh"><div class="wt"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="var(--cyan)"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>Entités les plus mentionnées</div></div>
-          <div class="trl" id="tr-list"></div>
+      
+      <div id="p-admin-users" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2>Gestion des utilisateurs</h2>
+          <button class="btn" style="width:auto;" onclick="showToast('Fonctionnalité disponible avec le backend')">+ Ajouter un utilisateur</button>
         </div>
-        <div class="w"><div class="wh"><div><div class="wt">Top pays couverts</div><span class="ws">Par origine géographique — 24h</span></div></div><canvas id="cc" height="200"></canvas></div>
-      </div>
-    </div>
-
-    <!-- ══ FLUX EN DIRECT ══ -->
-    <div id="p-feed" class="page fa">
-      <div class="ph"><div><div class="ptitle">Flux en direct</div><div class="psub">Actualisation automatique — 24 nouveaux articles depuis votre dernière visite</div></div><button class="btn-add" onclick="showToast('Filtres réinitialisés')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"/></svg>Filtres</button></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <span class="filt on">Tous</span><span class="filt" onclick="filterFeed(this,'Politique')">Politique</span><span class="filt" onclick="filterFeed(this,'Diplomatie')">Diplomatie</span><span class="filt" onclick="filterFeed(this,'Sécurité')">Sécurité</span><span class="filt" onclick="filterFeed(this,'Économie')">Économie</span><span class="filt" onclick="filterFeed(this,'Arabe')">🌍 Arabe</span><span class="filt" onclick="filterFeed(this,'Français')">🇫🇷 Français</span><span class="filt" onclick="filterFeed(this,'Anglais')">🇬🇧 Anglais</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px" id="feed-list"></div>
-    </div>
-
-    <!-- ══ RECHERCHE ══ -->
-    <div id="p-search" class="page fa">
-      <div class="ph"><div><div class="ptitle">Recherche avancée</div><div class="psub">Recherche simple, booléenne, avancée et sémantique (SF-SR-001 à 004)</div></div></div>
-      <div class="w">
-        <div style="display:flex;gap:10px;margin-bottom:14px">
-          <input class="search-main" id="search-q" placeholder="Ex: Sahara Occidental AND ONU -tension | &quot;accord de paix&quot;" value="Sahara Occidental"/>
-          <button class="btn-s" onclick="runSearch()">🔍 Rechercher</button>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-          <span class="filt on" onclick="setSearchType(this,'simple')">Simple</span>
-          <span class="filt" onclick="setSearchType(this,'advanced')">Avancée</span>
-          <span class="filt" onclick="setSearchType(this,'boolean')">Booléenne</span>
-          <span class="filt" onclick="setSearchType(this,'semantic')">🧠 Sémantique</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
-          <div><label class="lb">Langue</label><select class="inp" style="padding:7px 10px"><option>Toutes</option><option>Arabe</option><option>Français</option><option>Anglais</option></select></div>
-          <div><label class="lb">Pays</label><select class="inp" style="padding:7px 10px"><option>Tous</option><option>Maroc</option><option>France</option><option>Algérie</option></select></div>
-          <div><label class="lb">Catégorie</label><select class="inp" style="padding:7px 10px"><option>Toutes</option><option>Politique</option><option>Diplomatie</option><option>Sécurité</option></select></div>
-          <div><label class="lb">Période</label><select class="inp" style="padding:7px 10px"><option>30 derniers jours</option><option>7 derniers jours</option><option>24 dernières heures</option></select></div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Dernière connexion</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Admin Principal</strong></td><td>admin@vigia.ma</td><td><span style="background:var(--red);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">Super Admin</span></td>
+                <td><span style="color:var(--green);">● Actif</span></td><td>Maintenant</td>
+                <td><button class="btn-add" onclick="showToast('Profil ouvert')">Éditer</button></td>
+              </tr>
+              <tr>
+                <td>Analyste 1</td><td>analyste1@vigia.ma</td><td><span style="background:var(--cyan);color:#000;padding:2px 8px;border-radius:4px;font-size:11px;">Analyste</span></td>
+                <td><span style="color:var(--green);">● Actif</span></td><td>il y a 2h</td>
+                <td><button class="btn-add" onclick="showToast('Profil ouvert')">Éditer</button></td>
+              </tr>
+              <tr>
+                <td>Observateur 1</td><td>obs1@vigia.ma</td><td><span style="background:var(--s4);color:var(--tp);padding:2px 8px;border-radius:4px;font-size:11px;">Observateur</span></td>
+                <td><span style="color:var(--amber);">● Inactif</span></td><td>il y a 3 jours</td>
+                <td><button class="btn-add" onclick="showToast('Profil ouvert')">Éditer</button></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <div class="w" id="search-results"><div style="text-align:center;padding:40px;color:var(--tm)"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="48" height="48" style="margin:0 auto 12px;display:block;opacity:.3"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z"/></svg><p style="font-size:14px">Cliquez sur "Rechercher" pour lancer une recherche</p></div></div>
-    </div>
-
-    <!-- ══ CARTOGRAPHIE ══ -->
-    <div id="p-map" class="page fa">
-      <div class="ph"><div><div class="ptitle">Cartographie des événements</div><div class="psub">Visualisation géographique des articles — 24h</div></div></div>
-      <div class="map-wrap">
-        <div class="map-bg"></div>
-        <!-- SVG World Map Simplified -->
-        <svg viewBox="0 0 1000 500" style="width:100%;max-height:420px;opacity:.15;position:absolute;inset:0" fill="none" stroke="rgba(0,212,255,.4)" stroke-width=".5">
-          <!-- Simplified continents -->
-          <path d="M 80 120 Q 200 80 280 140 Q 260 200 200 220 Q 150 240 80 200 Z"/>
-          <path d="M 300 100 Q 450 60 520 120 Q 540 180 500 220 Q 440 240 360 230 Q 300 200 280 160 Z"/>
-          <path d="M 400 250 Q 480 240 520 280 Q 530 330 490 360 Q 440 380 390 360 Q 360 320 370 280 Z"/>
-          <path d="M 560 80 Q 680 60 760 100 Q 800 140 780 180 Q 740 220 680 230 Q 620 240 580 200 Q 550 160 560 120 Z"/>
-          <path d="M 800 80 Q 940 70 980 120 Q 990 160 970 200 Q 930 220 880 210 Q 840 200 820 170 Q 800 140 800 120 Z"/>
-          <path d="M 820 250 Q 880 240 920 270 Q 940 300 920 330 Q 890 350 850 340 Q 820 320 820 290 Z"/>
-        </svg>
-        <!-- Map dots (approximate positions) -->
-        <div class="map-dot" style="left:30%;top:42%;width:18px;height:18px;background:rgba(255,51,102,.9);color:rgba(255,51,102,.4)" title="Maroc — 1240 articles" onclick="showToast('Maroc : 1 240 articles — 29.4% du total')"></div>
-        <div class="map-dot" style="left:42%;top:32%;width:14px;height:14px;background:rgba(0,212,255,.8);color:rgba(0,212,255,.3)" title="France — 820 articles" onclick="showToast('France : 820 articles')"></div>
-        <div class="map-dot" style="left:34%;top:40%;width:12px;height:12px;background:rgba(167,139,250,.8);color:rgba(167,139,250,.3)" title="Algérie — 610 articles" onclick="showToast('Algérie : 610 articles')"></div>
-        <div class="map-dot" style="left:15%;top:38%;width:13px;height:13px;background:rgba(0,212,255,.7);color:rgba(0,212,255,.2)" title="USA — 580 articles" onclick="showToast('USA : 580 articles')"></div>
-        <div class="map-dot" style="left:38%;top:41%;width:10px;height:10px;background:rgba(0,255,136,.7);color:rgba(0,255,136,.2)" title="Tunisie — 320 articles" onclick="showToast('Tunisie : 320 articles')"></div>
-        <div class="map-dot" style="left:40%;top:35%;width:10px;height:10px;background:rgba(251,146,60,.8);color:rgba(251,146,60,.2)" title="Espagne — 290 articles" onclick="showToast('Espagne : 290 articles')"></div>
-        <div class="map-dot" style="left:55%;top:36%;width:9px;height:9px;background:rgba(0,212,255,.6);color:rgba(0,212,255,.15)" title="Turquie — 180 articles" onclick="showToast('Turquie : 180 articles')"></div>
-        <div class="map-dot" style="left:64%;top:42%;width:11px;height:11px;background:rgba(255,184,0,.8);color:rgba(255,184,0,.2)" title="Qatar — 150 articles" onclick="showToast('Qatar (Al Jazeera) : 150 articles')"></div>
-        <div class="map-legend">
-          <h4>Légende</h4>
-          <div class="map-legend-item"><div style="width:10px;height:10px;border-radius:50%;background:var(--red)"></div>CRITIQUE (&gt;1000)</div>
-          <div class="map-legend-item"><div style="width:10px;height:10px;border-radius:50%;background:var(--cyan)"></div>HAUTE (500-1000)</div>
-          <div class="map-legend-item"><div style="width:10px;height:10px;border-radius:50%;background:var(--green)"></div>NORMALE (&lt;500)</div>
-          <p style="font-size:10px;color:var(--tm);margin-top:8px">Cliquez sur un point pour les détails</p>
+      
+      <div id="p-admin-sources" class="page">
+        <p style="margin-bottom:20px;color:var(--tm);">20 affichées sur 430 configurées (données simulées)</p>
+        <div class="card">
+          <table>
+            <thead><tr><th>Nom</th><th>Type</th><th>Langue</th><th>Pays</th><th>Fiabilité</th><th>Fréquence</th><th>Dernière sync.</th><th>Articles</th><th>Statut</th></tr></thead>
+            <tbody id="sources-tbody"></tbody>
+          </table>
         </div>
       </div>
-    </div>
-
-    <!-- ══ FAVORIS ══ -->
-    <div id="p-favorites" class="page fa">
-      <div class="ph"><div><div class="ptitle">Mes favoris</div><div class="psub">Articles sauvegardés — 7 articles</div></div></div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div class="w" style="display:flex;align-items:center;gap:14px;cursor:pointer" onclick="showToast('Article ouvert')"><div style="flex:1"><div class="tit ar" style="font-size:13px;font-weight:600;direction:rtl;text-align:right">تخص جلالة الملك محمد السادس اليوم البرلمان بخطاب سامي</div><div style="display:flex;gap:8px;margin-top:6px"><span class="bd bd-cr">94</span><span class="bd bd-ar">AR</span><span class="mt">MAP • Politique • Ajouté le 12 août 2026</span></div></div><button class="ab" onclick="event.stopPropagation();showToast('Retiré des favoris')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" fill="#FFB800"/></svg></button></div>
-        <div class="w" style="display:flex;align-items:center;gap:14px;cursor:pointer" onclick="showToast('Article ouvert')"><div style="flex:1"><div style="font-size:13px;font-weight:600">UN Security Council holds emergency session on Western Sahara</div><div style="display:flex;gap:8px;margin-top:6px"><span class="bd bd-hi">88</span><span class="bd bd-en">EN</span><span class="mt">Reuters • Diplomatie • Ajouté le 12 août 2026</span></div></div><button class="ab" onclick="event.stopPropagation();showToast('Retiré des favoris')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" fill="#FFB800"/></svg></button></div>
+      
+      <div id="p-admin-stats" class="page">
+        <div class="card-grid">
+          <div class="card">
+            <h3>Activité système</h3>
+            <div class="chart-container"><canvas id="chart-sys"></canvas></div>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <!-- ══ ALERTES ══ -->
-    <div id="p-alerts" class="page fa">
-      <div class="ph"><div><div class="ptitle">Gestion des alertes</div><div class="psub">3 alertes actives — 2 non lues</div></div><button class="btn-add" onclick="showToast('Nouvelle alerte créée')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Nouvelle alerte</button></div>
-      <div class="tw"><table><thead><tr><th>Priorité</th><th>Nom de l'alerte</th><th>Conditions</th><th>Déclenchée</th><th>Canaux</th><th>Statut</th><th>Actions</th></tr></thead><tbody>
-        <tr><td><span class="bd bd-cr">CRITIQUE</span></td><td><div style="font-size:12px;font-weight:600">Discours Royal</div><div style="font-size:10px;color:var(--tm)">Mots-clés: Roi + discours</div></td><td><span style="font-size:11px;color:var(--ts)">Entité: Mohammed VI + importance &gt;85</span></td><td class="tc">il y a 4 min</td><td><div style="display:flex;gap:4px"><span class="bd bd-ar" style="font-size:9px">WS</span><span class="bd bd-fr" style="font-size:9px">Email</span></div></td><td><span class="act-on"><div class="dot" style="width:5px;height:5px;animation:none"></div>Active</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Alerte modifiée')" title="Modifier"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg></button><button class="ab" onclick="showToast('Alerte suspendue')" title="Suspendre"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5"/></svg></button></div></td></tr>
-        <tr><td><span class="bd bd-hi">HAUTE</span></td><td><div style="font-size:12px;font-weight:600">ONU — Sahara</div><div style="font-size:10px;color:var(--tm)">Mots-clés: ONU + Sahara</div></td><td><span style="font-size:11px;color:var(--ts)">Entités: ONU + Sahara Occidental</span></td><td class="tc">il y a 23 min</td><td><div style="display:flex;gap:4px"><span class="bd bd-ar" style="font-size:9px">WS</span></div></td><td><span class="act-on"><div class="dot" style="width:5px;height:5px;animation:none"></div>Active</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Alerte modifiée')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg></button><button class="ab"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5"/></svg></button></div></td></tr>
-        <tr><td><span class="bd bd-me">MOYENNE</span></td><td><div style="font-size:12px;font-weight:600">Rapport Sahel</div><div style="font-size:10px;color:var(--tm)">Mots-clés: Sahel + sécurité</div></td><td><span style="font-size:11px;color:var(--ts)">Catégorie: Sécurité + région: Sahel</span></td><td class="tc">il y a 1h 12</td><td><div style="display:flex;gap:4px"><span class="bd bd-ar" style="font-size:9px">WS</span><span class="bd bd-fr" style="font-size:9px">Email</span><span class="bd bd-en" style="font-size:9px">SMS</span></div></td><td><span class="act-on"><div class="dot" style="width:5px;height:5px;animation:none"></div>Active</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Alerte modifiée')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg></button><button class="ab"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5"/></svg></button></div></td></tr>
-      </tbody></table></div>
-    </div>
-
-    <!-- ══ RAPPORTS ══ -->
-    <div id="p-reports" class="page fa">
-      <div class="ph"><div><div class="ptitle">Rapports de veille</div><div class="psub">Synthesis et rapports structurés exportables</div></div><button class="btn-add" onclick="showToast('Nouveau rapport créé')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Nouveau rapport</button></div>
-      <div class="tw"><table><thead><tr><th>Titre</th><th>Articles</th><th>Classification</th><th>Statut</th><th>Créé</th><th>Actions</th></tr></thead><tbody>
-        <tr><td><div style="font-size:12px;font-weight:600">Synthèse hebdomadaire — Semaine 32/2026</div></td><td><span style="font-family:monospace;font-size:11px">24</span></td><td><span class="bd bd-me">USAGE RESTREINT</span></td><td><span class="act-on">Publié</span></td><td class="tc">10 août 2026</td><td><div class="acts" style="opacity:1"><button class="ab" onclick="openExport()" title="Exporter"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg></button></div></td></tr>
-        <tr><td><div style="font-size:12px;font-weight:600">Analyse — Dossier Sahara Occidental</div></td><td><span style="font-family:monospace;font-size:11px">41</span></td><td><span class="bd bd-cr">CONFIDENTIEL</span></td><td><span class="act-on">Publié</span></td><td class="tc">8 août 2026</td><td><div class="acts" style="opacity:1"><button class="ab" onclick="openExport()"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg></button></div></td></tr>
-        <tr><td><div style="font-size:12px;font-weight:600">Veille thématique — Relations Maroc-UE</div></td><td><span style="font-family:monospace;font-size:11px">18</span></td><td><span class="bd bd-me">USAGE RESTREINT</span></td><td><span class="act-off">Brouillon</span></td><td class="tc">12 août 2026</td><td><div class="acts" style="opacity:1"><button class="ab" onclick="openExport()"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg></button></div></td></tr>
-      </tbody></table></div>
-    </div>
-
-    <!-- ══ EXPORT ══ -->
-    <div id="p-export" class="page fa">
-      <div class="ph"><div><div class="ptitle">Centre d'exportation</div><div class="psub">Exporter les données selon les formats du cahier des charges</div></div></div>
-      <div class="g2">
-        <div class="w" style="cursor:pointer" onclick="showToast('Export PDF en cours de génération…')"><div style="text-align:center;padding:24px"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--red)" width="48" height="48" style="margin:0 auto 12px;display:block"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:4px">PDF Rapport</div><div style="font-size:12px;color:var(--ts)">Avec logo, classification, entête officiel</div><div class="btn-add" style="justify-content:center;margin-top:14px;width:100%">📥 Exporter en PDF</div></div></div>
-        <div class="w" style="cursor:pointer" onclick="showToast('Export Excel en cours de génération…')"><div style="text-align:center;padding:24px"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--green)" width="48" height="48" style="margin:0 auto 12px;display:block"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125"/></svg><div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:4px">Excel / CSV</div><div style="font-size:12px;color:var(--ts)">Données structurées avec métadonnées IA</div><div class="btn-add" style="justify-content:center;margin-top:14px;width:100%">📊 Exporter en Excel</div></div></div>
-        <div class="w" style="cursor:pointer" onclick="showToast('Export Word en cours de génération…')"><div style="text-align:center;padding:24px"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#60A5FA" width="48" height="48" style="margin:0 auto 12px;display:block"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 0H3.375c-.621 0-1.125.504-1.125 1.125m4.5-1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:4px">Word / DOCX</div><div style="font-size:12px;color:var(--ts)">Rapport éditorial formaté</div><div class="btn-add" style="justify-content:center;margin-top:14px;width:100%">📝 Exporter en Word</div></div></div>
-        <div class="w" style="cursor:pointer" onclick="showToast('Lien de partage copié dans le presse-papier')"><div style="text-align:center;padding:24px"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--cyan)" width="48" height="48" style="margin:0 auto 12px;display:block"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg><div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:4px">Partage sécurisé</div><div style="font-size:12px;color:var(--ts)">Lien temporaire avec QR code</div><div class="btn-add" style="justify-content:center;margin-top:14px;width:100%">🔗 Générer un lien</div></div></div>
+      
+      <div id="p-admin-audit" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2>Journal d'audit</h2>
+          <button class="btn-add" onclick="exportJSON()">📥 Exporter le journal</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Date / Heure</th><th>Utilisateur</th><th>Action</th><th>IP</th><th>Statut</th></tr></thead>
+            <tbody>
+              <tr><td>2026-09-16 09:42:31</td><td>admin</td><td>Connexion au système</td><td>192.168.1.10</td><td><span style="color:var(--green);">Succès</span></td></tr>
+              <tr><td>2026-09-16 08:15:00</td><td>analyste1</td><td>Export CSV — Flux articles</td><td>192.168.1.12</td><td><span style="color:var(--green);">Succès</span></td></tr>
+              <tr><td>2026-09-15 23:30:12</td><td>admin</td><td>Modification source : Al Jazeera AR</td><td>192.168.1.10</td><td><span style="color:var(--green);">Succès</span></td></tr>
+              <tr><td>2026-09-15 20:08:44</td><td>obs1</td><td>Tentative de connexion</td><td>10.0.0.55</td><td><span style="color:var(--red);">Échec</span></td></tr>
+              <tr><td>2026-09-15 18:00:00</td><td>admin</td><td>Génération rapport mensuel Août 2026</td><td>192.168.1.10</td><td><span style="color:var(--green);">Succès</span></td></tr>
+              <tr><td>2026-09-14 14:22:09</td><td>analyste1</td><td>Ajout alerte : Mouvement diplomatique</td><td>192.168.1.12</td><td><span style="color:var(--green);">Succès</span></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+      
     </div>
-
-    <!-- ══ ADMIN USERS ══ -->
-    <div id="p-admin-users" class="page fa">
-      <div class="ph"><div><div class="ptitle">Gestion des utilisateurs</div><div class="psub">7 comptes — 5 actifs</div></div><button class="btn-add" onclick="showToast('Formulaire de création ouvert')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Nouvel utilisateur</button></div>
-      <div class="tw"><table><thead><tr><th>Utilisateur</th><th>Rôle</th><th>Dernier accès</th><th>Statut</th><th>Actions</th></tr></thead><tbody>
-        <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:28px;height:28px;font-size:10px;flex-shrink:0">KT</div><div><div style="font-size:12px;font-weight:600">Karim TAHIRI</div><div style="font-size:10px;color:var(--tm)">k.tahiri@vigia.ma</div></div></div></td><td><span class="role-p">Administrateur</span></td><td class="tc">Maintenant</td><td><span class="act-on"><div class="dot" style="width:5px;height:5px;animation:none"></div>Connecté</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Profil ouvert')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg></button></div></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:28px;height:28px;font-size:10px;flex-shrink:0;background:linear-gradient(135deg,#A78BFA,#7C3AED)">SA</div><div><div style="font-size:12px;font-weight:600">Samira ALAMI</div><div style="font-size:10px;color:var(--tm)">s.alami@vigia.ma</div></div></div></td><td><span class="role-a">Analyste</span></td><td class="tc">il y a 2h</td><td><span class="act-on"><div class="dot" style="width:5px;height:5px;animation:none"></div>Actif</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Profil ouvert')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg></button></div></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:28px;height:28px;font-size:10px;flex-shrink:0;background:linear-gradient(135deg,#34D399,#059669)">YB</div><div><div style="font-size:12px;font-weight:600">Younes BENHIMA</div><div style="font-size:10px;color:var(--tm)">y.benhima@vigia.ma</div></div></div></td><td><span class="role-a">Analyste</span></td><td class="tc">Hier 18:32</td><td><span class="act-on"><div class="dot" style="width:5px;height:5px;animation:none"></div>Actif</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Profil ouvert')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg></button></div></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:28px;height:28px;font-size:10px;flex-shrink:0;background:linear-gradient(135deg,#60A5FA,#2563EB)">NE</div><div><div style="font-size:12px;font-weight:600">Nadia EL-FASSI</div><div style="font-size:10px;color:var(--tm)">n.elfassi@vigia.ma</div></div></div></td><td><span class="role-u">Utilisateur</span></td><td class="tc">12 juil 2026</td><td><span class="act-off">Inactif</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Profil ouvert')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg></button></div></td></tr>
-      </tbody></table></div>
-    </div>
-
-    <!-- ══ ADMIN SOURCES ══ -->
-    <div id="p-admin-sources" class="page fa">
-      <div class="ph"><div><div class="ptitle">Gestion des sources</div><div class="psub">430 sources configurées — 412 actives</div></div><button class="btn-add" onclick="showToast('Formulaire de création source ouvert')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Ajouter une source</button></div>
-      <div class="tw"><table><thead><tr><th>Source</th><th>Type</th><th>Langue</th><th>Pays</th><th>Fiabilité</th><th>Collecte</th><th>Statut</th><th>Actions</th></tr></thead><tbody>
-        <tr><td><div style="font-size:12px;font-weight:600">MAP — Agence Maroc Presse</div></td><td><span style="font-family:monospace;font-size:10px;color:var(--cyan)">API</span></td><td><span class="bd bd-ar">AR/FR</span></td><td><span style="font-family:monospace;font-size:10px">MA</span></td><td><div style="display:flex;align-items:center;gap:6px"><div style="width:50px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden"><div style="width:95%;height:100%;background:var(--green);border-radius:2px"></div></div><span style="font-family:monospace;font-size:10px;color:var(--green)">0.95</span></div></td><td><span class="tc">toutes les 5 min</span></td><td><span class="act-on"><div class="dot" style="width:5px;height:5px;animation:none"></div>Active</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Source modifiée')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg></button></div></td></tr>
-        <tr><td><div style="font-size:12px;font-weight:600">AFP</div></td><td><span style="font-family:monospace;font-size:10px;color:var(--cyan)">RSS</span></td><td><span class="bd bd-fr">FR</span></td><td><span style="font-family:monospace;font-size:10px">FR</span></td><td><div style="display:flex;align-items:center;gap:6px"><div style="width:50px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden"><div style="width:92%;height:100%;background:var(--green);border-radius:2px"></div></div><span style="font-family:monospace;font-size:10px;color:var(--green)">0.92</span></div></td><td><span class="tc">toutes les 5 min</span></td><td><span class="act-on"><div class="dot" style="width:5px;height:5px;animation:none"></div>Active</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Source modifiée')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg></button></div></td></tr>
-        <tr><td><div style="font-size:12px;font-weight:600">Sky News Arabia</div></td><td><span style="font-family:monospace;font-size:10px;color:var(--red)">RSS</span></td><td><span class="bd bd-ar">AR</span></td><td><span style="font-family:monospace;font-size:10px">AE</span></td><td><div style="display:flex;align-items:center;gap:6px"><div style="width:50px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden"><div style="width:72%;height:100%;background:var(--amber);border-radius:2px"></div></div><span style="font-family:monospace;font-size:10px;color:var(--amber)">0.72</span></div></td><td><span class="tc">toutes les 5 min</span></td><td><span style="color:var(--red);font-size:11px;display:flex;align-items:center;gap:4px"><span style="font-size:9px">●</span>Erreur</span></td><td><div class="acts" style="opacity:1"><button class="ab" onclick="showToast('Reconnexion forcée')"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg></button></div></td></tr>
-      </tbody></table></div>
-    </div>
-
-    <!-- ══ STATS ══ -->
-    <div id="p-admin-stats" class="page fa">
-      <div class="ph"><div><div class="ptitle">Statistiques système</div><div class="psub">Métriques de performance — VIGIA v1.0.0</div></div></div>
-      <div class="g4">
-        <div class="w big-stat"><div class="val" style="color:var(--cyan)">28 543</div><div class="lbl">Articles collectés (7j)</div></div>
-        <div class="w big-stat"><div class="val" style="color:var(--green)">98.7%</div><div class="lbl">Disponibilité système</div></div>
-        <div class="w big-stat"><div class="val" style="color:var(--amber)">234 ms</div><div class="lbl">Temps de réponse API</div></div>
-        <div class="w big-stat"><div class="val" style="color:#A78BFA">1 024</div><div class="lbl">Dim. vecteurs IA (E5)</div></div>
-      </div>
-      <div class="g2">
-        <div class="w"><div class="wh"><div class="wt">Performance API — 7 jours</div></div><canvas id="perf-chart" height="180"></canvas></div>
-        <div class="w"><div class="wh"><div class="wt">Distribution des traitements IA</div></div><canvas id="ai-chart" height="180"></canvas></div>
-      </div>
-    </div>
-
-    <!-- ══ AUDIT ══ -->
-    <div id="p-admin-audit" class="page fa">
-      <div class="ph"><div><div class="ptitle">Journaux d'audit</div><div class="psub">RS-006 — Toutes les actions sont tracées et immutables</div></div></div>
-      <div class="tw"><table><thead><tr><th>Horodatage</th><th>Utilisateur</th><th>Action</th><th>Module</th><th>IP</th><th>Statut</th></tr></thead><tbody>
-        <tr><td class="tc">2026-08-12 04:17:54</td><td style="font-size:11px;font-weight:600">k.tahiri</td><td><span style="font-size:11px;color:var(--cyan)">AUTH_LOGIN</span></td><td><span class="tc">auth</span></td><td class="tc">192.168.1.42</td><td><span style="color:var(--green);font-size:10px">200 OK</span></td></tr>
-        <tr><td class="tc">2026-08-12 04:16:21</td><td style="font-size:11px;font-weight:600">s.alami</td><td><span style="font-size:11px;color:var(--cyan)">ARTICLE_EXPORT</span></td><td><span class="tc">export</span></td><td class="tc">192.168.1.38</td><td><span style="color:var(--green);font-size:10px">200 OK</span></td></tr>
-        <tr><td class="tc">2026-08-12 04:14:08</td><td style="font-size:11px;font-weight:600">system</td><td><span style="font-size:11px;color:var(--amber)">COLLECTION_RUN</span></td><td><span class="tc">celery</span></td><td class="tc">127.0.0.1</td><td><span style="color:var(--green);font-size:10px">OK</span></td></tr>
-        <tr><td class="tc">2026-08-12 04:09:00</td><td style="font-size:11px;font-weight:600">system</td><td><span style="font-size:11px;color:var(--amber)">AI_PROCESS</span></td><td><span class="tc">ai</span></td><td class="tc">127.0.0.1</td><td><span style="color:var(--green);font-size:10px">OK</span></td></tr>
-        <tr><td class="tc">2026-08-12 03:58:41</td><td style="font-size:11px;font-weight:600">wrong_user</td><td><span style="font-size:11px;color:var(--red)">AUTH_FAILURE</span></td><td><span class="tc">auth</span></td><td class="tc">10.0.0.14</td><td><span style="color:var(--red);font-size:10px">401 FAIL</span></td></tr>
-      </tbody></table></div>
-    </div>
-
   </div>
-</div>
 
-<!-- ══ EXPORT MODAL ══ -->
-<div class="modal-overlay" id="export-modal">
-  <div class="modal">
-    <h3>Exporter le rapport</h3>
-    <p>Choisissez le format d'exportation. Le fichier sera généré avec classification "USAGE RESTREINT".</p>
-    <div class="modal-btns">
-      <div class="mbt" onclick="closeModal();showToast('PDF généré — téléchargement démarré')"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--red)"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><span>PDF</span><small>Rapport officiel</small></div>
-      <div class="mbt" onclick="closeModal();showToast('Excel généré')"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--green)"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625"/></svg><span>Excel</span><small>Données + métadonnées</small></div>
-      <div class="mbt" onclick="closeModal();showToast('Word généré')"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#60A5FA"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25"/></svg><span>Word</span><small>Rapport éditorial</small></div>
-      <div class="mbt" onclick="closeModal();showToast('Lien copié: https://vigia.internal/share/r/abc123')"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--cyan)"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757"/></svg><span>Lien</span><small>Partage 48h</small></div>
+  <!-- Modals -->
+  <div id="article-modal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeArticleModal()">×</button>
+      <div id="article-modal-body"></div>
     </div>
-    <button class="modal-close" onclick="closeModal()">Annuler</button>
   </div>
-</div>
 
-<!-- ══ TOAST ══ -->
-<div id="toast" style="position:fixed;bottom:24px;right:24px;z-index:200;display:none;animation:fadeUp .2s ease">
-  <div style="background:var(--s3);border:1px solid rgba(0,212,255,.2);border-radius:8px;padding:12px 18px;font-size:13px;color:var(--tp);box-shadow:0 8px 32px rgba(0,0,0,.6);display:flex;align-items:center;gap:10px">
-    <div class="dot" style="animation:none;background:var(--cyan)"></div>
-    <span id="toast-msg">Message</span>
+  <div id="alert-modal" class="modal" onclick="if(event.target.id==='alert-modal')closeAlertModal()">
+    <div class="modal-content" style="max-width:560px;">
+      <button class="close-modal" onclick="closeAlertModal()">×</button>
+      <div id="alert-modal-body"></div>
+    </div>
   </div>
-</div>
 
-<script>
-// ════════════════════════════════════════
-// VIGIA — Application JavaScript
-// ════════════════════════════════════════
+  <div class="toast-container" id="toast-container"></div>
 
-const TRENDS = [
-  {rank:1,name:"Mohammed VI",type:"P",count:342,delta:"+28%",pct:100},
-  {rank:2,name:"Sahara Occidental",type:"G",count:289,delta:"+45%",pct:85},
-  {rank:3,name:"ONU",type:"O",count:241,delta:"+12%",pct:71},
-  {rank:4,name:"OTAN",type:"O",count:198,delta:"+8%",pct:58},
-  {rank:5,name:"Rabat",type:"G",count:167,delta:"+5%",pct:49},
-  {rank:6,name:"Stéphane Séjourné",type:"P",count:143,delta:"+67%",pct:42},
-  {rank:7,name:"Sahel",type:"L",count:112,delta:"+19%",pct:33},
-  {rank:8,name:"Accord de Genève",type:"L",count:88,delta:"+3%",pct:26},
-];
+  <script>
+    // Theme toggle
+    function toggleTheme() {
+      const isLight = document.documentElement.dataset.theme === 'light';
+      document.documentElement.dataset.theme = isLight ? 'dark' : 'light';
+      localStorage.setItem('vigia-theme', isLight ? 'dark' : 'light');
+      updateThemeIcon();
+    }
+    function updateThemeIcon() {
+      const isLight = document.documentElement.dataset.theme === 'light';
+      document.getElementById('theme-icon').innerText = isLight ? '☀️' : '🌙';
+    }
+    const savedTheme = localStorage.getItem('vigia-theme') || 'dark';
+    document.documentElement.dataset.theme = savedTheme;
+    updateThemeIcon();
 
-const EC = {P:{c:"#A78BFA",b:"rgba(167,139,250,.08)",d:"rgba(167,139,250,.25)",l:"PER"},O:{c:"#60A5FA",b:"rgba(96,165,250,.08)",d:"rgba(96,165,250,.25)",l:"ORG"},G:{c:"#00D4FF",b:"rgba(0,212,255,.08)",d:"rgba(0,212,255,.25)",l:"GPE"},L:{c:"#00FF88",b:"rgba(0,255,136,.06)",d:"rgba(0,255,136,.2)",l:"LOC"}};
+    // Login
+    function togglePwd() {
+      const p = document.getElementById('login-pass');
+      p.type = p.type === 'password' ? 'text' : 'password';
+    }
+    function login() {
+      const u = document.getElementById('login-user').value;
+      const p = document.getElementById('login-pass').value;
+      if (u === 'admin' && p === 'vigia2026') {
+        document.getElementById('p-login').classList.remove('active');
+        document.getElementById('app-shell').style.display = 'flex';
+        showPage('p-dashboard');
+        renderDashboard();
+      } else {
+        document.getElementById('login-err').style.display = 'block';
+      }
+    }
 
-const FEED_DATA = [
-  {title:"تخص جلالة الملك محمد السادس اليوم البرلمان بخطاب سامي",ar:true,summary:"خطاب ملكي حول المحاور الكبرى للعمل الحكومي للسنة التشريعية المقبلة",source:"MAP",country:"MA",lang:"AR",cat:"Politique",imp:94,sent:"Positif",time:"il y a 12 min"},
-  {title:"UN Security Council holds emergency session on Western Sahara",ar:false,summary:"The Security Council convened an emergency meeting to examine the latest diplomatic developments regarding the Sahara file.",source:"Reuters",country:"US",lang:"EN",cat:"Diplomatie",imp:88,sent:"Neutre",time:"il y a 34 min"},
-  {title:"La France renforce sa coopération sécuritaire avec le Maghreb",ar:false,summary:"Paris annonce un programme de coopération renforcée en matière de sécurité avec les pays du Maghreb.",source:"Le Monde",country:"FR",lang:"FR",cat:"Sécurité",imp:76,sent:"Neutre",time:"il y a 1h 08"},
-  {title:"مجلس الأمن يناقش الوضع الأمني في منطقة الساحل",ar:true,summary:"ناقش مجلس الأمن الوضع الأمني المتدهور في منطقة الساحل وسبل التعاون الدولي",source:"الجزيرة",country:"QA",lang:"AR",cat:"Sécurité",imp:71,sent:"Négatif",time:"il y a 2h 15"},
-  {title:"España y Marruecos refuerzan su cooperación en materia migratoria",ar:false,summary:"Los gobiernos de España y Marruecos firmaron un nuevo acuerdo de cooperación para gestionar los flujos migratorios.",source:"El País",country:"ES",lang:"ES",cat:"Diplomatie",imp:65,sent:"Positif",time:"il y a 3h 20"},
-  {title:"Les investissements directs étrangers au Maroc atteignent un record",ar:false,summary:"Les IDE au Maroc ont atteint 4,2 milliards de dollars au premier semestre 2026, un niveau record selon la DEPF.",source:"Les Eco",country:"MA",lang:"FR",cat:"Économie",imp:58,sent:"Positif",time:"il y a 4h 45"},
-];
+    // Logout
+    function logout() {
+      document.getElementById('app-shell').style.display = 'none';
+      document.getElementById('p-login').classList.add('active');
+      document.getElementById('p-dashboard').classList.add('active');
+      window.chartsInit = false;
+      mapInstance = null;
+      showToast('Vous avez été déconnecté');
+    }
 
-const SEARCH_RESULTS = [
-  {title:"Sahara Occidental : vers une solution politique durable",summary:"Analyse des dernières évolutions diplomatiques du dossier du Sahara Occidental à l'ONU et positions des principales puissances.",source:"MAP",lang:"FR",imp:91,sent:"Positif",cat:"Diplomatie",time:"il y a 2h"},
-  {title:"Western Sahara conflict: International diplomacy at a crossroads",summary:"An analysis of the geopolitical dynamics surrounding the Western Sahara conflict and the role of international institutions.",source:"BBC",lang:"EN",imp:84,sent:"Neutre",cat:"Diplomatie",time:"il y a 5h"},
-  {title:"الصحراء الغربية: مساعي الأمم المتحدة للتوصل إلى تسوية",summary:"تسعى الأمم المتحدة إلى إيجاد حل سياسي دائم لقضية الصحراء الغربية في ضوء التطورات الأخيرة",source:"الجزيرة",lang:"AR",imp:79,sent:"Neutre",cat:"Politique",time:"il y a 8h"},
-];
+    // Navigation
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      const item = Array.from(document.querySelectorAll('.nav-item')).find(n => n.getAttribute('onclick') === `showPage('${pageId}')`);
+      if(item) item.classList.add('active');
+      
+      const titles = {
+        'p-dashboard':'Tableau de bord', 'p-feed':'Flux en direct', 'p-search':'Recherche', 'p-map':'Cartographie',
+        'p-favorites':'Favoris', 'p-social':'Réseaux sociaux', 'p-videos':'Vidéos', 'p-alerts':'Alertes',
+        'p-reports':'Rapports', 'p-export':'Exporter', 'p-admin-users':'Utilisateurs', 'p-admin-sources':'Sources',
+        'p-admin-stats':'Statistiques', 'p-admin-audit':'Journaux d audit'
+      };
+      document.getElementById('page-title').innerText = titles[pageId] || '';
 
-// ── Login ─────────────────────────────────────────────────
-document.getElementById('lf').addEventListener('submit', function(e){
-  e.preventDefault();
-  const u=document.getElementById('un').value.trim();
-  const p=document.getElementById('pw').value;
-  const err=document.getElementById('err');
-  const btn=document.getElementById('lb');
-  if(!u||!p){document.getElementById('em').textContent='Renseignez tous les champs.';err.classList.add('show');return;}
-  err.classList.remove('show');
-  btn.disabled=true;
-  btn.innerHTML='<svg style="animation:spin .8s linear infinite" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg> Authentification en cours…';
-  setTimeout(()=>{
-    document.getElementById('v-login').classList.remove('active');
-    document.getElementById('v-app').classList.add('active');
-    initApp();
-  },1000);
-});
+      if (pageId === 'p-map') {
+        setTimeout(initMap, 100);
+      }
+      if (pageId === 'p-dashboard' && !window.chartsInit) {
+        initCharts();
+        renderDashboard();
+        window.chartsInit = true;
+      }
+    }
 
-function toggleEye(){const pw=document.getElementById('pw');pw.type=pw.type==='password'?'text':'password';}
+    // Toast
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.innerText = msg;
+      document.getElementById('toast-container').appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
 
-// ── App Init ──────────────────────────────────────────────
-let chartsInit=false;
-function initApp(){
-  if(!chartsInit){
-    buildTrends();
-    buildVolumeChart();
-    buildLangChart();
-    buildCountryChart();
-    buildFeed();
-    chartsInit=true;
-  }
-  updateClock();
-  setInterval(updateClock,1000);
-  let cd=180;
-  setInterval(()=>{
-    cd--;if(cd<0)cd=300;
-    const m=Math.floor(cd/60).toString().padStart(2,'0');
-    const s=(cd%60).toString().padStart(2,'0');
-    const el=document.getElementById('cd');
-    if(el)el.textContent=m+':'+s;
-  },1000);
-}
-
-// ── Navigation ────────────────────────────────────────────
-function go(page, navEl){
-  // Hide all pages
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  // Remove active from all nav items
-  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
-  // Show page
-  const pg=document.getElementById('p-'+page);
-  if(pg){pg.classList.add('active');}
-  // Set nav active
-  if(navEl){navEl.classList.add('on');}
-  // Close notif
-  document.getElementById('notif-panel').classList.remove('open');
-  // Init page-specific charts
-  setTimeout(()=>{
-    if(page==='admin-stats'&&!document.getElementById('perf-chart')._chart){buildStatCharts();}
-  },100);
-}
-
-// ── Sidebar ───────────────────────────────────────────────
-let col=false;
-function toggleSB(){
-  col=!col;
-  const sb=document.getElementById('sb');
-  const ti=document.getElementById('ti');
-  sb.classList.toggle('col',col);
-  ti.innerHTML=col?'<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>':'<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>';
-}
-
-// ── Logout ────────────────────────────────────────────────
-function logout(){
-  document.getElementById('v-app').classList.remove('active');
-  document.getElementById('v-login').classList.add('active');
-  document.getElementById('lb').disabled=false;
-  document.getElementById('lb').innerHTML='<svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>Se connecter';
-}
-
-// ── Clock ─────────────────────────────────────────────────
-function updateClock(){const n=new Date();document.getElementById('clk').textContent=n.toLocaleTimeString('fr-MA',{hour:'2-digit',minute:'2-digit'});}
-
-// ── Notifications ─────────────────────────────────────────
-function toggleNotif(){document.getElementById('notif-panel').classList.toggle('open');}
-document.addEventListener('click',function(e){if(!e.target.closest('#nb-btn')&&!e.target.closest('#notif-panel'))document.getElementById('notif-panel').classList.remove('open');});
-
-// ── Toast ─────────────────────────────────────────────────
-let toastT;
-function showToast(msg){
-  clearTimeout(toastT);
-  const t=document.getElementById('toast');
-  document.getElementById('toast-msg').textContent=msg;
-  t.style.display='block';
-  toastT=setTimeout(()=>t.style.display='none',3000);
-}
-
-// ── Modal ─────────────────────────────────────────────────
-function openExport(){document.getElementById('export-modal').classList.add('open');}
-function closeModal(){document.getElementById('export-modal').classList.remove('open');}
-
-// ── Trends ────────────────────────────────────────────────
-function buildTrends(){
-  const el=document.getElementById('tr-list');
-  if(!el)return;
-  el.innerHTML=TRENDS.map(t=>{
-    const e=EC[t.type]||EC.L;
-    return`<div class="tri" onclick="showToast('${t.name} : ${t.count} mentions')">
-      <div class="trk">${t.rank}</div>
-      <div class="tri-info">
-        <div class="tri-top">
-          <span class="tri-n">${t.name}</span>
-          <span class="ety" style="color:${e.c};background:${e.b};border-color:${e.d}">${e.l}</span>
+    // Article Modal
+    const ARTICLE_DETAIL = (a) => `
+      <div style='padding:24px'>
+        <div style='display:flex;gap:8px;margin-bottom:16px'>
+          <span class='bd bd-${a.lang.toLowerCase()}'>${a.lang}</span>
+          <span class='cat'>${a.cat}</span>
+          <span class='imp'>${a.imp}</span>
+          <span class='${a.sent==="Positif"?"pos":a.sent==="Négatif"?"neg":"neu"}'>${a.sent}</span>
         </div>
-        <div class="pb"><div class="pf" style="width:${t.pct}%"></div></div>
-      </div>
-      <div class="tri-r"><div class="tri-c">${t.count}</div><div class="tri-d">${t.delta}</div></div>
-    </div>`;
-  }).join('');
-}
-
-// ── Feed ──────────────────────────────────────────────────
-function buildFeed(filter){
-  const el=document.getElementById('feed-list');
-  if(!el)return;
-  const data=filter?FEED_DATA.filter(f=>f.cat===filter||f.lang.toLowerCase()===filter.toLowerCase().replace('arabe','ar').replace('français','fr').replace('anglais','en')):FEED_DATA;
-  el.innerHTML=data.map(f=>`
-    <div class="feed-item" onclick="showToast('Article ouvert : ${f.source}')">
-      <div class="fi-main">
-        <div class="fi-title${f.ar?' ar':''}">${f.title}</div>
-        <div class="fi-sum">${f.summary}</div>
-        <div class="fi-meta">
-          <span class="bd bd-${f.lang.toLowerCase()}">${f.lang}</span>
-          <span style="font-size:11px;font-weight:600">${f.source}</span>
-          <span class="tc">${f.country}</span>
-          <span class="cat">${f.cat}</span>
-          <span class="tc">${f.time}</span>
+        <h2 style='font-size:18px;font-weight:700;margin-bottom:12px;line-height:1.4;${a.lang==="AR"?"direction:rtl;text-align:right;font-family:Noto Sans Arabic":""}'>${a.title}</h2>
+        <div style='display:flex;gap:16px;font-size:12px;color:var(--tm);margin-bottom:16px'>
+          <span>📰 ${a.source}</span>
+          <span>🌍 ${a.country}</span>
+          <span>🕐 ${a.time}</span>
+        </div>
+        <div style='background:var(--s3);border-radius:8px;padding:16px;margin-bottom:16px;border-left:3px solid var(--cyan)'>
+          <div style='font-size:11px;color:var(--cyan);margin-bottom:8px;font-weight:600'>SYNTHÈSE IA</div>
+          <p style='font-size:13px;line-height:1.6;color:var(--tp);${a.lang==="AR"?"direction:rtl;text-align:right;font-family:Noto Sans Arabic":""}'>${a.summary}</p>
+        </div>
+        <div style='background:var(--s3);border-radius:8px;padding:12px;font-size:12px;color:var(--tm)'>
+          ⚠️ Le contenu complet n'est pas disponible. Seule la synthèse est affichée. Cette plateforme est en mode démonstration.
+        </div>
+        <div style='display:flex;gap:10px;margin-top:20px'>
+          <button class='btn-add' onclick='showToast("Ajouté aux favoris")'> Favoris</button>
+          <button class='btn-add' onclick='showToast("Source originale non disponible en mode démonstration")'>🔗 Source originale</button>
         </div>
       </div>
-      <div class="fi-side">
-        <span class="imp" style="background:${f.imp>=85?'rgba(255,51,102,.12)':'rgba(255,184,0,.1)'};color:${f.imp>=85?'var(--red)':'var(--amber)'};border:1px solid ${f.imp>=85?'rgba(255,51,102,.25)':'rgba(255,184,0,.25)'}">${f.imp}</span>
-        <span class="${f.sent==='Positif'?'pos':f.sent==='Négatif'?'neg':'neu'}">${f.sent}</span>
-        <button class="ab" onclick="event.stopPropagation();showToast('Ajouté aux favoris')" style="color:var(--tm)"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg></button>
+    `;
+    function openArticle(id) {
+      const a = FEED_DATA.find(x => x.id === id);
+      document.getElementById('article-modal-body').innerHTML = ARTICLE_DETAIL(a);
+      document.getElementById('article-modal').classList.add('open');
+    }
+    function closeArticleModal() {
+      document.getElementById('article-modal').classList.remove('open');
+    }
+    document.getElementById('article-modal').addEventListener('click', (e) => {
+      if(e.target.id === 'article-modal') closeArticleModal();
+    });
+
+    // Search
+    function runSearch() {
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      const srcType = document.getElementById('search-source').value;
+      const resultsEl = document.getElementById('search-results');
+      const metaEl = document.getElementById('search-results-meta');
+      if (!q) { resultsEl.innerHTML = '<div class="card" style="color:var(--tm);">Saisissez un terme pour rechercher.</div>'; metaEl.innerText = ''; return; }
+      let results = [];
+      if (srcType === 'all' || srcType === 'article') {
+        FEED_DATA.filter(a => a.title.toLowerCase().includes(q) || a.source.toLowerCase().includes(q) || a.cat.toLowerCase().includes(q) || a.summary.toLowerCase().includes(q)).forEach(a => results.push({type:'article', data:a}));
+      }
+      if (srcType === 'all' || srcType === 'social') {
+        SOCIAL_DATA.filter(s => s.text.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.platform.toLowerCase().includes(q)).forEach(s => results.push({type:'social', data:s}));
+      }
+      if (srcType === 'all' || srcType === 'video') {
+        VIDEO_DATA.filter(v => v.title.toLowerCase().includes(q) || v.channel.toLowerCase().includes(q)).forEach(v => results.push({type:'video', data:v}));
+      }
+      metaEl.innerText = results.length > 0 ? results.length + ' résultat(s) pour "' + q + '"' : '';
+      if (results.length === 0) {
+        resultsEl.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--tm);">Aucun résultat pour "' + q + '". Essayez un autre terme.</div>';
+        return;
+      }
+      resultsEl.innerHTML = results.map(r => {
+        if (r.type === 'article') {
+          const a = r.data;
+          return `<div class="article-item"><div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;"><span style="background:var(--s3);padding:2px 8px;border-radius:4px;font-size:11px;">📰 Article</span><span class="bd bd-${a.lang.toLowerCase()}">${a.lang}</span><span class="cat">${a.cat}</span></div><h3 style="margin-bottom:8px;">${a.title}</h3><div style="font-size:12px;color:var(--tm);margin-bottom:8px;">${a.source} • ${a.time}</div><button class='btn-add' onclick='openArticle(${a.id})'>Ouvrir l'article</button></div>`;
+        } else if (r.type === 'social') {
+          const s = r.data;
+          return `<div class="article-item"><div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;"><span style="background:var(--purple);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">📱 ${s.platform}</span></div><p style="margin-bottom:8px;">${s.text}</p><div style="font-size:12px;color:var(--tm);">${s.name} • ${s.time} • ❤️ ${s.likes}</div></div>`;
+        } else {
+          const v = r.data;
+          return `<div class="article-item"><div style="display:flex;gap:8px;margin-bottom:8px;"><span style="background:var(--red);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">🎬 Vidéo</span></div><h3 style="margin-bottom:8px;">${v.title}</h3><div style="font-size:12px;color:var(--tm);">${v.channel} • ${v.duration} • ${v.views} vues</div></div>`;
+        }
+      }).join('');
+    }
+
+    // Reports modal
+    function openReportModal() { document.getElementById('report-modal').classList.add('open'); }
+    function closeReportModal() { document.getElementById('report-modal').classList.remove('open'); }
+    function generateReport() {
+      const title = document.getElementById('rpt-title').value.trim();
+      const start = document.getElementById('rpt-start').value;
+      const end = document.getElementById('rpt-end').value;
+      const errEl = document.getElementById('rpt-error');
+      if (!title) { errEl.innerText = 'Veuillez saisir un titre.'; errEl.style.display = 'block'; return; }
+      if (!start || !end) { errEl.innerText = 'Veuillez sélectionner les dates.'; errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
+      const cats = Array.from(document.querySelectorAll('#rpt-cats input:checked')).map(c => c.value).join(', ');
+      const tbody = document.getElementById('reports-tbody');
+      const today = new Date().toLocaleDateString('fr-FR');
+      tbody.insertAdjacentHTML('afterbegin', `<tr><td><strong>${title}</strong></td><td>${start} – ${end}</td><td>${cats||'Toutes'}</td><td>${today}</td><td><button class='btn-add' onclick='exportPDF()'>📥 Télécharger</button></td></tr>`);
+      closeReportModal();
+      showToast('✅ Rapport "' + title + '" généré avec succès');
+    }
+
+    // Dashboard trends & alerts
+    function renderDashboard() {
+      const trends = ['Maroc','Sahara Occidental','Diplomatie','Sécurité régionale','Sahel','Investissements','France-Maroc','ONU'];
+      const colors = ['var(--cyan)','var(--red)','var(--purple)','var(--amber)','var(--red)','var(--green)','var(--cyan)','var(--purple)'];
+      const counts = [1240, 980, 820, 760, 610, 480, 390, 320];
+      document.getElementById('trend-list').innerHTML = trends.map((t,i) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:14px;">${i+1}. ${t}</span>
+          <span style="font-size:13px;font-weight:600;color:${colors[i]}">${counts[i]}</span>
+        </div>
+      `).join('');
+      document.getElementById('dash-alerts').innerHTML = ALERTS_DATA.slice(0,4).map(a => `
+        <div onclick="showPage('p-alerts')" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;">
+          <span style="width:8px;height:8px;border-radius:50%;background:${a.pri==='CRITIQUE'?'var(--red)':a.pri==='HAUTE'?'var(--amber)':'var(--green)'};flex-shrink:0;"></span>
+          <span style="font-size:13px;flex:1;${a.read?'color:var(--tm)':''}">${a.title}</span>
+          <span style="font-size:11px;color:var(--ts);">${a.pri}</span>
+        </div>
+      `).join('');
+    }
+
+    // Mock Data
+    const FEED_DATA = [
+      {id:1, title:'Le Maroc consolide sa position de leader régional', source:'MAP', lang:'FR', country:'Maroc', cat:'Politique', imp:'HAUTE', sent:'Positif', time:'il y a 10 min', summary:'Synthèse de l\\'article sur la position du Maroc.'},
+      {id:2, title:'تطورات جديدة في مجلس الأمن حول الصحراء', source:'Al Jazeera', lang:'AR', country:'Qatar', cat:'Diplomatie', imp:'CRITIQUE', sent:'Neutre', time:'il y a 25 min', summary:'ملخص التقرير حول التطورات.'}
+    ];
+
+    const SOCIAL_DATA = [
+      {id:1, platform:'Twitter/X', handle:'@MAP_Maroc', name:'MAP Maroc Officiel', text:'#Maroc : Sa Majesté le Roi Mohammed VI adresse un discours au Parlement.', time:'il y a 8 min', likes:1240, retweets:380, lang:'AR', cat:'Politique', imp:92, sent:'Positif', hashtags:['#Maroc','#RoiMohammed6'], url:'#'},
+      {id:2, platform:'LinkedIn', handle:'UN_Morocco', name:'United Nations Morocco', text:'UN Security Council holds emergency session on Western Sahara developments.', time:'il y a 42 min', likes:560, retweets:120, lang:'EN', cat:'Diplomatie', imp:85, sent:'Neutre', hashtags:['#WesternSahara','#UNSecurity'], url:'#'},
+      {id:3, platform:'Facebook', handle:'LeMonde.Afrique', name:'Le Monde Afrique', text:'La coopération sécuritaire entre la France et le Maghreb se renforce.', time:'il y a 1h 15', likes:892, retweets:234, lang:'FR', cat:'Sécurité', imp:76, sent:'Positif', hashtags:['#France','#Maghreb','#Sécurité'], url:'#'},
+      {id:4, platform:'YouTube', handle:'AlJazeera_AR', name:'الجزيرة', text:'مجلس الأمن يناقش الوضع الأمني في منطقة الساحل — تقرير كامل', time:'il y a 2h', likes:3200, retweets:890, lang:'AR', cat:'Sécurité', imp:71, sent:'Négatif', hashtags:['#الساحل','#مجلسالأمن'], url:'#'},
+      {id:5, platform:'Instagram', handle:'elconfidencial', name:'El Confidencial', text:'España y Marruecos refuerzan su cooperación migratoria con nuevo acuerdo bilateral.', time:'il y a 3h 20', likes:445, retweets:89, lang:'ES', cat:'Diplomatie', imp:65, sent:'Positif', hashtags:['#España','#Marruecos'], url:'#'},
+      {id:6, platform:'TikTok', handle:'leseco_ma', name:'Les Économistes', text:'Les IDE au Maroc atteignent 4,2 milliards $ — un record historique au S1 2026.', time:'il y a 4h 45', likes:12400, retweets:2100, lang:'FR', cat:'Économie', imp:58, sent:'Positif', hashtags:['#IDE','#Maroc','#Économie'], url:'#'},
+    ];
+
+    const VIDEO_DATA = [
+      {id:1, title:'خطاب جلالة الملك محمد السادس أمام البرلمان — 2026', channel:'MAP TV', platform:'YouTube', duration:'18:42', views:'124K', time:'il y a 2h', lang:'AR', cat:'Politique', imp:95, thumb:'https://via.placeholder.com/320x180/0D1526/00D4FF?text=MAP+TV', url:'#'},
+      {id:2, title:'UN Security Council — Western Sahara Emergency Session', channel:'UN WebTV', platform:'YouTube', duration:'1:24:15', views:'89K', time:'il y a 4h', lang:'EN', cat:'Diplomatie', imp:88, thumb:'https://via.placeholder.com/320x180/0D1526/A78BFA?text=UN+WebTV', url:'#'},
+      {id:3, title:'Coopération France-Maghreb : analyse géopolitique', channel:'France 24', platform:'YouTube', duration:'12:30', views:'45K', time:'il y a 6h', lang:'FR', cat:'Sécurité', imp:76, thumb:'https://via.placeholder.com/320x180/0D1526/00FF88?text=France+24', url:'#'},
+      {id:4, title:'Sahel : crisis sécuritaire — reportage terrain', channel:'Al Jazeera', platform:'YouTube', duration:'28:14', views:'230K', time:'il y a 8h', lang:'AR', cat:'Sécurité', imp:71, thumb:'https://via.placeholder.com/320x180/0D1526/FF3366?text=Al+Jazeera', url:'#'},
+      {id:5, title:'Marruecos IDE récord — análisis económico 2026', channel:'El País TV', platform:'YouTube', duration:'9:55', views:'18K', time:'il y a 12h', lang:'ES', cat:'Économie', imp:58, thumb:'https://via.placeholder.com/320x180/0D1526/FFB800?text=El+Pais', url:'#'},
+    ];
+
+    const SOURCES_DATA = [
+      {name:'Agence MAP', type:'API', lang:'FR/AR', country:'Maroc', rel:'0.97', freq:'Temps réel', status:'Active', lastSync:'09:41', count:428},
+      {name:'Al Jazeera Arabic', type:'RSS', lang:'AR', country:'Qatar', rel:'0.94', freq:'5 min', status:'Active', lastSync:'09:40', count:312},
+      {name:'Le Monde', type:'RSS', lang:'FR', country:'France', rel:'0.96', freq:'15 min', status:'Active', lastSync:'09:38', count:287},
+      {name:'Reuters (EN)', type:'API', lang:'EN', country:'USA', rel:'0.98', freq:'Temps réel', status:'Active', lastSync:'09:42', count:651},
+      {name:'BBC Arabic', type:'RSS', lang:'AR', country:'Royaume-Uni', rel:'0.93', freq:'10 min', status:'Active', lastSync:'09:35', count:198},
+      {name:'Euronews FR', type:'Scraping', lang:'FR', country:'Belgique', rel:'0.89', freq:'30 min', status:'Active', lastSync:'09:30', count:143},
+      {name:'El País', type:'RSS', lang:'ES', country:'Espagne', rel:'0.91', freq:'20 min', status:'Active', lastSync:'09:25', count:112},
+      {name:'Médias24', type:'Scraping', lang:'FR', country:'Maroc', rel:'0.88', freq:'15 min', status:'Active', lastSync:'09:40', count:234},
+      {name:'Hespress', type:'Scraping', lang:'AR/FR', country:'Maroc', rel:'0.85', freq:'10 min', status:'Active', lastSync:'09:38', count:456},
+      {name:'AFP Wire', type:'API', lang:'FR', country:'France', rel:'0.99', freq:'Temps réel', status:'Error', lastSync:'20:45 (hier)', count:0},
+      {name:'Sky News Arabia', type:'RSS', lang:'AR', country:'Émirats', rel:'0.90', freq:'10 min', status:'Active', lastSync:'09:39', count:178},
+      {name:'France 24', type:'RSS', lang:'FR/AR/EN', country:'France', rel:'0.95', freq:'10 min', status:'Active', lastSync:'09:41', count:321},
+      {name:'Deutsche Welle Arabic', type:'RSS', lang:'AR', country:'Allemagne', rel:'0.92', freq:'30 min', status:'Active', lastSync:'09:10', count:87},
+      {name:'La Vie Économique', type:'Scraping', lang:'FR', country:'Maroc', rel:'0.84', freq:'1h', status:'Active', lastSync:'09:00', count:65},
+      {name:'Anadolu Agency', type:'API', lang:'AR/FR/EN', country:'Turquie', rel:'0.87', freq:'15 min', status:'Active', lastSync:'09:35', count:245},
+      {name:'Washington Post', type:'RSS', lang:'EN', country:'USA', rel:'0.95', freq:'30 min', status:'Active', lastSync:'09:20', count:134},
+      {name:'Al Arabiya', type:'Scraping', lang:'AR', country:'Arabie S.', rel:'0.86', freq:'20 min', status:'Active', lastSync:'09:15', count:198},
+      {name:'Jeune Afrique', type:'RSS', lang:'FR', country:'France', rel:'0.91', freq:'1h', status:'Active', lastSync:'08:45', count:89},
+      {name:'ONU Actualités', type:'RSS', lang:'FR/EN/AR', country:'USA', rel:'0.99', freq:'1h', status:'Active', lastSync:'08:00', count:34},
+      {name:'TelQuel Maroc', type:'Scraping', lang:'FR', country:'Maroc', rel:'0.83', freq:'2h', status:'Inactive', lastSync:'hier 18:00', count:12},
+    ];
+
+    const ALERTS_DATA = [
+      {id:1, pri:'CRITIQUE', title:'Incident sécuritaire — Zone frontalière Sud', date:'2026-09-16 08:15', read:false, desc:'Des mouvements suspects ont été détectés à proximité de la zone frontalière sud. Les unités de surveillance ont signalé une activité anormale corrélée à des publications sur les réseaux sociaux.', art:1},
+      {id:2, pri:'CRITIQUE', title:'Publication virale anti-Maroc — X/Twitter', date:'2026-09-16 07:32', read:false, desc:'Un hashtag hostile au Maroc est devenu viral sur Twitter/X avec plus de 45 000 mentions en 3 heures. Analyse de sentiment : 78% négatif. Origine principale : bots coordonnés.', art:4},
+      {id:3, pri:'HAUTE', title:'Mouvement diplomatique — Réunion ONU urgent', date:'2026-09-15 23:00', read:true, desc:'Convocation d\'une session extraordinaire du Conseil de Sécurité de l\'ONU concernant la situation au Sahara. Tous les membres permanents attendus. Délégation marocaine en route.', art:2},
+      {id:4, pri:'HAUTE', title:'Source AFP hors ligne — Interruption collecte', date:'2026-09-15 20:45', read:true, desc:'La source AFP (flux RSS officiel) n\'est plus accessible depuis 20h45. 0 article collecté depuis 3h. Vérification technique en cours. Impact estimé : 15% de couverture médiatique.', art:null},
+      {id:5, pri:'NORMALE', title:'Pic de volume — Articles économie Maroc', date:'2026-09-15 16:00', read:true, desc:'Le volume d\'articles traitant de l\'économie marocaine a augmenté de 210% par rapport à la moyenne des 7 derniers jours. Corrélation identifiée avec l\'annonce du record IDE.', art:8},
+    ];
+
+    // Render Feed
+    document.getElementById('feed-list').innerHTML = FEED_DATA.map(a => `
+      <div class='article-item'>
+        <div style='display:flex;gap:8px;margin-bottom:8px;'>
+          <span class='bd bd-${a.lang.toLowerCase()}'>${a.lang}</span>
+          <span class='cat'>${a.cat}</span>
+        </div>
+        <h3 style='margin-bottom:8px;${a.lang==="AR"?"direction:rtl;text-align:right;":""}'>${a.title}</h3>
+        <button class='btn-add' onclick='openArticle(${a.id})'>Ouvrir l article</button>
       </div>
-    </div>`).join('');
-}
+    `).join('');
 
-function filterFeed(el,f){
-  document.querySelectorAll('.filt').forEach(x=>x.classList.remove('on'));
-  el.classList.add('on');
-  buildFeed(f==='Tous'?null:f);
-}
+    // Render Social
+    document.getElementById('social-list').innerHTML = SOCIAL_DATA.map(s => `
+      <div class='card'>
+        <div style='font-size:12px;color:var(--cyan);margin-bottom:8px;'>${s.platform} • ${s.time}</div>
+        <div style='font-weight:bold;margin-bottom:8px;'>${s.name} <span style='color:var(--tm);font-weight:normal;'>${s.handle}</span></div>
+        <p style='font-size:14px;margin-bottom:12px;${s.lang==="AR"?"direction:rtl;text-align:right;":""}'>${s.text}</p>
+        <div style='font-size:12px;color:var(--tm);'>❤️ ${s.likes} | 🔄 ${s.retweets}</div>
+      </div>
+    `).join('');
 
-// ── Search ────────────────────────────────────────────────
-let searchType='simple';
-function setSearchType(el,t){
-  document.querySelectorAll('.filt').forEach(x=>x.classList.remove('on'));
-  el.classList.add('on');
-  searchType=t;
-}
-function runSearch(){
-  const q=document.getElementById('search-q').value;
-  const el=document.getElementById('search-results');
-  el.innerHTML='<div style="text-align:center;padding:20px"><div style="color:var(--cyan);font-size:13px;margin-bottom:12px">🔍 Recherche en cours…</div></div>';
-  setTimeout(()=>{
-    const res=q?SEARCH_RESULTS:[];
-    if(!res.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--tm)">Aucun résultat pour "'+q+'"</div>';return;}
-    el.innerHTML=`<div style="margin-bottom:12px;font-size:12px;color:var(--ts)">${res.length} résultats pour "<span style="color:var(--cyan)">${q}</span>" — Mode: ${searchType}</div><div class="tw"><table><thead><tr><th>Imp.</th><th>Article</th><th>Source</th><th>Lang.</th><th>Sentiment</th><th>Catégorie</th><th>Date</th></tr></thead><tbody>${res.map(r=>`<tr onclick="showToast('Article ouvert')"><td><span class="imp" style="background:rgba(255,51,102,.1);color:var(--red);border:1px solid rgba(255,51,102,.2)">${r.imp}</span></td><td class="at"><div class="tit">${r.title}</div><div class="sm">${r.summary}</div></td><td><div style="font-size:11px;font-weight:600">${r.source}</div></td><td><span class="bd bd-${r.lang.toLowerCase()}">${r.lang}</span></td><td><span class="${r.sent==='Positif'?'pos':r.sent==='Négatif'?'neg':'neu'}">${r.sent}</span></td><td><span class="cat">${r.cat}</span></td><td class="tc">${r.time}</td></tr>`).join('')}</tbody></table></div>`;
-  },600);
-}
+    // Render Videos
+    document.getElementById('video-list').innerHTML = VIDEO_DATA.map(v => `
+      <div class='card' style='padding:0;overflow:hidden;'>
+        <div style='position:relative;'>
+          <img src='${v.thumb}' style='width:100%;height:150px;object-fit:cover;display:block;'>
+          <span style='position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.8);color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;'>${v.duration}</span>
+        </div>
+        <div style='padding:16px;'>
+          <h4 style='margin-bottom:8px;${v.lang==="AR"?"direction:rtl;text-align:right;":""}'>${v.title}</h4>
+          <div style='font-size:12px;color:var(--tm);'>${v.channel} • ${v.views} vues</div>
+        </div>
+      </div>
+    `).join('');
 
-// ── Charts ────────────────────────────────────────────────
-function buildVolumeChart(){
-  const ctx=document.getElementById('vc').getContext('2d');
-  const gC=ctx.createLinearGradient(0,0,0,200);gC.addColorStop(0,'rgba(0,212,255,.25)');gC.addColorStop(1,'rgba(0,212,255,0)');
-  const gG=ctx.createLinearGradient(0,0,0,200);gG.addColorStop(0,'rgba(0,255,136,.15)');gG.addColorStop(1,'rgba(0,255,136,0)');
-  const gA=ctx.createLinearGradient(0,0,0,200);gA.addColorStop(0,'rgba(255,184,0,.12)');gA.addColorStop(1,'rgba(255,184,0,0)');
-  new Chart(ctx,{type:'line',data:{labels:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],datasets:[
-    {label:'Presse',data:[620,580,710,690,750,420,380],borderColor:'#00D4FF',backgroundColor:gC,borderWidth:2,pointRadius:0,tension:.4,fill:true},
-    {label:'Social',data:[340,410,380,450,490,300,260],borderColor:'#00FF88',backgroundColor:gG,borderWidth:2,pointRadius:0,tension:.4,fill:true},
-    {label:'Officiel',data:[80,95,72,110,88,40,30],borderColor:'#FFB800',backgroundColor:gA,borderWidth:2,pointRadius:0,tension:.4,fill:true},
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{color:'#94A3B8',font:{size:10,family:"Inter"},boxWidth:8,boxHeight:8,padding:12,usePointStyle:true}},tooltip:{backgroundColor:'rgba(13,21,38,.95)',titleColor:'#E2E8F0',bodyColor:'#94A3B8',borderColor:'rgba(255,255,255,.08)',borderWidth:1,padding:10,cornerRadius:8}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5563',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5563',font:{size:10}}}}}});
-}
+    // Render Sources
+    document.getElementById('sources-tbody').innerHTML = SOURCES_DATA.map(s => `
+      <tr>
+        <td><strong>${s.name}</strong></td>
+        <td><span style="background:var(--s3);padding:2px 6px;border-radius:4px;font-size:11px;">${s.type}</span></td>
+        <td>${s.lang}</td><td>${s.country}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:60px;height:6px;background:var(--s3);border-radius:3px;overflow:hidden;">
+              <div style="width:${parseFloat(s.rel)*100}%;height:100%;background:${parseFloat(s.rel)>0.9?'var(--green)':parseFloat(s.rel)>0.75?'var(--amber)':'var(--red)'}"></div>
+            </div>
+            <span style="font-size:12px;">${s.rel}</span>
+          </div>
+        </td>
+        <td>${s.freq||'—'}</td>
+        <td>${s.lastSync||'—'}</td>
+        <td><span style="font-size:13px;font-weight:600;color:${s.count>0?'var(--tp)':'var(--tm)'}">${s.count||0}</span></td>
+        <td><span style='color:${s.status==="Active"?"var(--green)":s.status==="Error"?"var(--red)":"var(--amber)"}'>● ${s.status}</span></td>
+      </tr>
+    `).join('');
 
-function buildLangChart(){
-  const ctx=document.getElementById('lc').getContext('2d');
-  new Chart(ctx,{type:'doughnut',data:{labels:['Arabe','Français','Anglais','Espagnol','Autres'],datasets:[{data:[1680,1120,890,310,218],backgroundColor:['#A78BFA','#60A5FA','#34D399','#FB923C','#374151'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(13,21,38,.95)',titleColor:'#E2E8F0',bodyColor:'#94A3B8',borderColor:'rgba(255,255,255,.08)',borderWidth:1,padding:10,cornerRadius:8}}}});
-}
+    // Render Alerts
+    function renderAlerts() {
+      document.getElementById('alerts-tbody').innerHTML = ALERTS_DATA.map(a => `
+        <tr style="opacity:${a.read?0.6:1};font-weight:${a.read?'normal':'600'}">
+          <td><span style="background:${a.pri==='CRITIQUE'?'var(--red)':a.pri==='HAUTE'?'var(--amber)':'var(--s4)'};color:${a.pri==='NORMALE'?'var(--tp)':'#fff'};padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;">${a.pri}</span></td>
+          <td>${a.read?a.title:'🔴 '+a.title}</td>
+          <td style="font-size:12px;color:var(--tm);">${a.date}</td>
+          <td>
+            <button class='btn-add' onclick='openAlert(${a.id})' style="margin-right:6px;">Détail</button>
+            <button class='btn-add' onclick='toggleAlertRead(${a.id})'>${a.read?'Non lu':'✓ Lu'}</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    function toggleAlertRead(id) {
+      const a = ALERTS_DATA.find(x => x.id === id);
+      if(a) { a.read = !a.read; renderAlerts(); showToast(a.read ? 'Marqué comme lu' : 'Marqué comme non lu'); }
+    }
+    function openAlert(id) {
+      const a = ALERTS_DATA.find(x => x.id === id);
+      if(!a) return;
+      document.getElementById('alert-modal-body').innerHTML = `
+        <div style="padding:24px;">
+          <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <span style="background:${a.pri==='CRITIQUE'?'var(--red)':a.pri==='HAUTE'?'var(--amber)':'var(--s4)'};color:${a.pri==='NORMALE'?'var(--tp)':'#fff'};padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;">${a.pri}</span>
+            <span style="background:${a.read?'var(--s3)':'var(--s4)'};padding:3px 10px;border-radius:4px;font-size:12px;">${a.read?'Lu':'Non lu'}</span>
+          </div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:12px;">${a.title}</h2>
+          <div style="font-size:12px;color:var(--tm);margin-bottom:16px;">🕐 ${a.date}</div>
+          <div style="background:var(--s3);border-radius:8px;padding:16px;border-left:3px solid ${a.pri==='CRITIQUE'?'var(--red)':'var(--amber)'};margin-bottom:16px;">
+            <p style="font-size:14px;line-height:1.7;">${a.desc}</p>
+          </div>
+          ${a.art ? `<button class='btn-add' onclick='closeAlertModal();openArticle(${a.art})'>📰 Voir l\'article associé</button>` : ''}
+          <div style="display:flex;gap:10px;margin-top:16px;">
+            <button class='btn-add' onclick='toggleAlertRead(${a.id});closeAlertModal()'>${a.read?'Marquer non lu':'✓ Marquer comme lu'}</button>
+            <button class='btn-add' onclick='showToast("Alerte archivée");closeAlertModal()'>📁 Archiver</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('alert-modal').classList.add('open');
+    }
+    function closeAlertModal() { document.getElementById('alert-modal').classList.remove('open'); }
+    renderAlerts();
 
-function buildCountryChart(){
-  const ctx=document.getElementById('cc').getContext('2d');
-  new Chart(ctx,{type:'bar',data:{labels:['Maroc','France','Algérie','USA','Tunisie','Espagne','UK','Qatar'],datasets:[{label:'Articles',data:[1240,820,610,580,320,290,210,150],backgroundColor:['rgba(0,212,255,.9)','rgba(0,212,255,.75)','rgba(0,212,255,.62)','rgba(0,212,255,.55)','rgba(0,212,255,.45)','rgba(0,212,255,.38)','rgba(0,212,255,.3)','rgba(0,212,255,.22)'],borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(13,21,38,.95)',titleColor:'#E2E8F0',bodyColor:'#94A3B8',borderColor:'rgba(255,255,255,.08)',borderWidth:1,padding:10,cornerRadius:8}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5563',font:{size:10}}},y:{grid:{display:false},ticks:{color:'#94A3B8',font:{size:11}}}}}});
-}
+    // Leaflet
+    let mapInstance = null;
+    function initMap() {
+      if (mapInstance) { mapInstance.invalidateSize(); return; }
+      mapInstance = L.map('map-leaflet').setView([28, 10], 3);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+      }).addTo(mapInstance);
+      const markers = [
+        {lat:31.79, lng:-7.09, name:'Maroc', count:1240, color:'#FF3366', importance:'CRITIQUE'},
+        {lat:46.23, lng:2.21, name:'France', count:820, color:'#00D4FF', importance:'HAUTE'},
+        {lat:28.03, lng:1.66, name:'Algérie', count:610, color:'#A78BFA', importance:'HAUTE'},
+        {lat:37.09, lng:-95.71, name:'USA', count:580, color:'#00D4FF', importance:'HAUTE'},
+        {lat:33.89, lng:9.54, name:'Tunisie', count:320, color:'#00FF88', importance:'NORMALE'},
+        {lat:40.46, lng:-3.75, name:'Espagne', count:290, color:'#FFB800', importance:'NORMALE'},
+        {lat:38.96, lng:35.24, name:'Turquie', count:180, color:'#00D4FF', importance:'NORMALE'},
+        {lat:25.35, lng:51.18, name:'Qatar', count:150, color:'#FFB800', importance:'NORMALE'},
+      ];
+      markers.forEach(m => {
+        const circle = L.circleMarker([m.lat, m.lng], {
+          radius: Math.max(8, Math.min(20, m.count / 60)),
+          fillColor: m.color, color: m.color, weight: 2, opacity: 0.9, fillOpacity: 0.7
+        }).addTo(mapInstance);
+        circle.bindPopup(`<div style='font-family:Space Grotesk,sans-serif;min-width:160px'><strong style='font-size:14px'>${m.name}</strong><br><span style='color:#666'>${m.count} articles</span><br><span style='background:${m.color};color:#fff;padding:2px 6px;border-radius:4px;font-size:11px'>${m.importance}</span></div>`);
+      });
+    }
 
-function buildStatCharts(){
-  const p=document.getElementById('perf-chart');
-  if(p&&!p._chart){
-    const ctx=p.getContext('2d');
-    p._chart=new Chart(ctx,{type:'line',data:{labels:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],datasets:[{label:'Temps réponse (ms)',data:[220,234,198,241,225,180,212],borderColor:'#00D4FF',borderWidth:2,pointRadius:0,tension:.4,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(13,21,38,.95)',titleColor:'#E2E8F0',bodyColor:'#94A3B8',borderColor:'rgba(255,255,255,.08)',borderWidth:1,padding:10,cornerRadius:8}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5563',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4B5563',font:{size:10}}}}}});
-  }
-  const a=document.getElementById('ai-chart');
-  if(a&&!a._chart){
-    const ctx2=a.getContext('2d');
-    a._chart=new Chart(ctx2,{type:'doughnut',data:{labels:['Résumé FR/AR','Traduction','NER','Classification','Sentiment','Vectorisation'],datasets:[{data:[35,20,18,12,8,7],backgroundColor:['#00D4FF','#A78BFA','#00FF88','#FFB800','#60A5FA','#FB923C'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:true,position:'right',labels:{color:'#94A3B8',font:{size:10},boxWidth:8,padding:8}}}}});
-  }
-}
+    // Charts
+    function initCharts() {
+      new Chart(document.getElementById('chart-vol'), {
+        type: 'line',
+        data: { labels: ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'], datasets: [{ label: 'Volume', data: [120, 190, 150, 220, 300, 250, 280], borderColor: '#00D4FF', tension: 0.4 }] },
+        options: { maintainAspectRatio: false }
+      });
+      new Chart(document.getElementById('chart-lang'), {
+        type: 'doughnut',
+        data: { labels: ['FR','AR','EN'], datasets: [{ data: [45, 35, 20], backgroundColor: ['#00D4FF','#A78BFA','#00FF88'] }] },
+        options: { maintainAspectRatio: false }
+      });
+      new Chart(document.getElementById('chart-sys'), {
+        type: 'bar',
+        data: { labels: ['A','B','C'], datasets: [{ label: 'Activité', data: [10, 20, 15], backgroundColor: '#FFB800' }] },
+        options: { maintainAspectRatio: false }
+      });
+    }
 
-// Close export modal on overlay click
-document.getElementById('export-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-</script>
+    // Exports
+    function exportCSV() {
+      const headers = ['Titre','Source','Langue','Pays','Catégorie','Importance','Sentiment','Date'];
+      const rows = FEED_DATA.map(a => [a.title, a.source, a.lang, a.country, a.cat, a.imp, a.sent, a.time]);
+      const csv = [headers, ...rows].map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+      const blob = new Blob(['\uFEFF' + csv], {type: 'text/csv;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vigia-articles-' + new Date().toISOString().slice(0,10) + '.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Fichier CSV téléchargé avec succès');
+    }
+    function exportJSON() {
+      const data = { exported_at: new Date().toISOString(), source: 'VIGIA Platform v2.0', note: 'Données de démonstration', articles: FEED_DATA };
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vigia-export-' + new Date().toISOString().slice(0,10) + '.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Fichier JSON téléchargé avec succès');
+    }
+    function exportPDF() {
+      window.print();
+      showToast('Impression/PDF lancée');
+    }
+  </script>
 </body>
 </html>
