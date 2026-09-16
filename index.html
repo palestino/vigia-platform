@@ -3,109 +3,302 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VIGIA v2.0 — Plateforme de Veille Stratégique</title>
+<meta name="description" content="VIGIA — Plateforme de veille stratégique et intelligence médiatique">
+<meta name="theme-color" content="#070B14">
+<title>VIGIA — Plateforme de Veille Stratégique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
 <style>
-:root{--bg:#070B14;--s1:#0D1526;--s2:#111D33;--s3:#162040;--s4:#1C2952;--border:rgba(0,212,255,.12);--tp:#E8F0FE;--tm:rgba(232,240,254,.55);--ts:rgba(232,240,254,.35);--cyan:#00D4FF;--green:#00FF88;--red:#FF3366;--amber:#FFB800;--purple:#A78BFA;}
-[data-theme="light"]{--bg:#F0F4F8;--s1:#fff;--s2:#F8FAFC;--s3:#EDF2F7;--s4:#E2E8F0;--border:rgba(0,100,200,.15);--tp:#1A202C;--tm:rgba(26,32,44,.6);--ts:rgba(26,32,44,.4);}
+:root{--bg:#070B14;--s1:#0D1526;--s2:#111D33;--s3:#162040;--s4:#1C2952;
+  --border:rgba(0,212,255,.12);--tp:#E8F0FE;--tm:rgba(232,240,254,.55);--ts:rgba(232,240,254,.3);
+  --cyan:#00D4FF;--green:#00FF88;--red:#FF3366;--amber:#FFB800;--purple:#A78BFA;
+  --sb-width:260px;}
+[data-theme=light]{--bg:#F0F4F8;--s1:#fff;--s2:#F8FAFC;--s3:#EDF2F7;--s4:#E2E8F0;
+  --border:rgba(0,100,200,.12);--tp:#1A202C;--tm:rgba(26,32,44,.6);--ts:rgba(26,32,44,.35);}
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tp);transition:background .3s,color .3s;}
+html,body{height:100%;font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tp);
+  transition:background .3s,color .3s;font-size:14px;}
+a{color:var(--cyan);text-decoration:none;}
+a:hover{text-decoration:underline;}
+img{max-width:100%;}
 
 /* ===== LOGIN ===== */
-#v-login{display:flex;height:100vh;align-items:center;justify-content:center;}
+#v-login{display:flex;height:100vh;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 30% 50%,rgba(0,212,255,.04) 0%,transparent 60%);}
 #v-login.hidden{display:none;}
-.lbox{background:var(--s1);padding:48px;border-radius:12px;border:1px solid var(--border);width:420px;text-align:center;box-shadow:0 0 40px rgba(0,212,255,.08);}
-.llogo{font-size:32px;font-weight:700;color:var(--cyan);letter-spacing:6px;margin-bottom:6px;}
-.lsub{font-size:13px;color:var(--tm);margin-bottom:32px;}
+.lbox{background:var(--s1);padding:48px;border-radius:16px;border:1px solid var(--border);
+  width:420px;max-width:calc(100vw - 32px);text-align:center;
+  box-shadow:0 0 60px rgba(0,212,255,.06),0 20px 60px rgba(0,0,0,.3);}
+.llogo{font-size:36px;font-weight:700;color:var(--cyan);letter-spacing:8px;margin-bottom:4px;}
+.lver{font-size:11px;color:var(--cyan);opacity:.6;letter-spacing:3px;margin-bottom:6px;}
+.lsub{font-size:13px;color:var(--tm);margin-bottom:36px;line-height:1.5;}
 .lg{margin-bottom:18px;text-align:left;}
-.lg label{font-size:12px;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
-.li{width:100%;padding:12px 14px;background:var(--s2);border:1px solid var(--border);color:var(--tp);border-radius:6px;font-family:inherit;font-size:14px;outline:none;margin-top:6px;transition:border-color .2s;}
-.li:focus{border-color:var(--cyan);}
-.lrow{display:flex;gap:8px;margin-top:6px;}
-.btn{background:var(--cyan);color:#000;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:700;font-family:inherit;font-size:14px;transition:opacity .2s;}
-.btn:hover{opacity:.85;}
-.btn:disabled{opacity:.5;cursor:default;}
-.gbtn{background:transparent;border:1px solid var(--border);color:var(--tp);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;transition:.2s;}
-.gbtn:hover{background:var(--s2);}
-#lerr{color:var(--red);font-size:13px;margin-top:12px;display:none;}
+.llab{font-size:11px;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;}
+.li{width:100%;padding:12px 14px;background:var(--s2);border:1px solid var(--border);color:var(--tp);
+  border-radius:8px;font-family:inherit;font-size:14px;outline:none;transition:border-color .2s;}
+.li:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.1);}
+.li::placeholder{color:var(--ts);}
+.lrow{display:flex;gap:8px;}
+.cbtn{background:linear-gradient(135deg,var(--cyan),#0099BB);color:#000;border:none;
+  padding:13px 20px;border-radius:8px;cursor:pointer;font-weight:700;font-family:inherit;
+  font-size:14px;width:100%;margin-top:8px;letter-spacing:.5px;transition:opacity .2s,transform .1s;}
+.cbtn:hover{opacity:.9;}
+.cbtn:active{transform:scale(.98);}
+.cbtn:disabled{opacity:.5;cursor:default;}
+.gbtn{background:transparent;border:1px solid var(--border);color:var(--tm);padding:8px 12px;
+  border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px;transition:.2s;flex-shrink:0;}
+.gbtn:hover{background:var(--s2);color:var(--tp);}
+#lerr{color:var(--red);font-size:13px;margin-top:12px;display:none;padding:10px;
+  background:rgba(255,51,102,.08);border-radius:6px;border:1px solid rgba(255,51,102,.2);}
+.lfoot{margin-top:24px;font-size:11px;color:var(--ts);border-top:1px solid var(--border);padding-top:20px;}
 
-/* ===== APP ===== */
+/* ===== APP SHELL ===== */
 #v-app{display:none;height:100vh;overflow:hidden;}
 #v-app.visible{display:flex;}
-.sb{width:260px;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
-.sblogo{padding:20px;font-size:22px;font-weight:700;color:var(--cyan);letter-spacing:4px;border-bottom:1px solid var(--border);}
-.sblogo span{font-size:11px;color:var(--tm);display:block;letter-spacing:1px;font-weight:400;margin-top:2px;}
-.nvsec{margin-top:14px;}
-.nvtitle{font-size:11px;color:var(--ts);padding:0 20px;margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px;}
-.nv{padding:10px 20px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--tm);font-size:13px;font-weight:500;transition:.2s;border-right:3px solid transparent;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;}
+.overlay.on{display:block;}
+
+/* ===== SIDEBAR ===== */
+.sb{width:var(--sb-width);background:var(--s1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;
+  transition:transform .3s;z-index:201;}
+.sblogo{padding:20px 20px 16px;border-bottom:1px solid var(--border);}
+.sbname{font-size:22px;font-weight:700;color:var(--cyan);letter-spacing:4px;}
+.sbsub{font-size:10px;color:var(--ts);letter-spacing:1.5px;margin-top:2px;text-transform:uppercase;}
+.nvsec{margin-top:12px;padding-bottom:8px;}
+.nvtitle{font-size:10px;color:var(--ts);padding:8px 20px 4px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.5px;}
+.nv{padding:9px 20px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--tm);
+  font-size:13px;font-weight:500;transition:.15s;border-right:3px solid transparent;
+  user-select:none;}
 .nv:hover{background:var(--s2);color:var(--tp);}
-.nv.on{background:var(--s2);color:var(--cyan);border-right-color:var(--cyan);}
-.bnew{background:var(--green);color:#000;font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700;margin-left:auto;}
-.bnum{background:var(--red);color:#fff;font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700;margin-left:auto;}
+.nv.on{background:rgba(0,212,255,.08);color:var(--cyan);border-right-color:var(--cyan);font-weight:600;}
+.nv-icon{font-size:15px;flex-shrink:0;width:20px;text-align:center;}
+.bnew{background:var(--green);color:#000;font-size:9px;padding:2px 6px;border-radius:8px;
+  font-weight:800;margin-left:auto;letter-spacing:.5px;}
+.bnum{background:var(--red);color:#fff;font-size:9px;padding:2px 6px;border-radius:8px;
+  font-weight:700;margin-left:auto;min-width:18px;text-align:center;}
+.sbdiv{height:1px;background:var(--border);margin:8px 0;}
 .sbfoot{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
-.mc{flex:1;overflow-y:auto;height:100vh;}
-.tb{height:60px;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100;}
-.tb-title{font-weight:700;font-size:18px;}
-.tb-actions{display:flex;gap:10px;align-items:center;}
-.ibtn{background:transparent;border:1px solid var(--border);color:var(--tp);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:14px;transition:.2s;}
+.sbusr{display:flex;align-items:center;gap:10px;}
+.av{width:34px;height:34px;background:linear-gradient(135deg,var(--cyan),#0099BB);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#000;font-size:15px;flex-shrink:0;}
+.avname{font-weight:600;font-size:13px;}
+.avrole{font-size:11px;color:var(--tm);}
+
+/* ===== TOPBAR ===== */
+.mc{flex:1;overflow-y:auto;height:100vh;display:flex;flex-direction:column;}
+.tb{height:58px;background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+  position:sticky;top:0;z-index:100;flex-shrink:0;gap:12px;}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0;}
+.hamburger{display:none;background:transparent;border:1px solid var(--border);
+  color:var(--tp);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;
+  align-items:center;justify-content:center;flex-shrink:0;}
+.tb-title{font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-right{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+.ibtn{background:transparent;border:1px solid var(--border);color:var(--tp);
+  padding:6px 10px;border-radius:8px;cursor:pointer;font-size:13px;
+  white-space:nowrap;transition:.15s;font-family:inherit;}
 .ibtn:hover{background:var(--s2);}
+.live-dot{width:8px;height:8px;background:var(--green);border-radius:50%;
+  animation:pulse 2s infinite;display:inline-block;margin-right:4px;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ===== PAGES ===== */
-.page{display:none;min-height:calc(100vh - 60px);padding:24px 24px 60px;}
+.pages-wrap{flex:1;position:relative;}
+.page{display:none;padding:20px;min-height:calc(100vh - 58px);padding-bottom:60px;}
 .page.on{display:block;}
-.banner{background:rgba(255,184,0,.12);border:1px solid rgba(255,184,0,.3);border-radius:8px;padding:10px 16px;font-size:12px;color:var(--amber);font-weight:600;margin-bottom:20px;}
-.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;}
-.kcard{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:20px;transition:.2s;}
-.kcard:hover{border-color:var(--cyan);}
-.klbl{font-size:11px;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
-.kval{font-size:32px;font-weight:700;line-height:1;}
-.kdelta{font-size:12px;color:var(--tm);margin-top:6px;}
-.card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:20px;}
-.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:20px;}
-.cwrap{position:relative;height:280px;}
+.page-hdr{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.page-hdr h2{font-size:18px;font-weight:700;}
+.status-bar{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tm);
+  background:var(--s2);border:1px solid var(--border);border-radius:20px;
+  padding:4px 12px;margin-bottom:16px;}
+
+/* ===== KPI CARDS ===== */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px;}
+.kcard{background:var(--s1);border:1px solid var(--border);border-radius:10px;
+  padding:18px;transition:.2s;cursor:default;}
+.kcard:hover{border-color:rgba(0,212,255,.3);transform:translateY(-1px);}
+.klbl{font-size:11px;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;font-weight:600;}
+.kval{font-size:28px;font-weight:700;line-height:1;}
+.kdelta{font-size:11px;color:var(--tm);margin-top:6px;}
+
+/* ===== CARDS / GRIDS ===== */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:16px;}
+.cwrap{position:relative;height:260px;}
+.card-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;
+  justify-content:space-between;}
+
+/* ===== TABLE ===== */
+.tscroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);}
-th{font-size:11px;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+th{font-size:10px;color:var(--tm);font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+  white-space:nowrap;background:var(--s2);}
 tr:last-child td{border-bottom:none;}
-tr:hover td{background:var(--s2);}
-.acard{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px;transition:.2s;}
-.acard:hover{border-color:rgba(0,212,255,.4);}
-.bd{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;}
+tr:hover td{background:rgba(0,212,255,.03);}
+
+/* ===== ARTICLE CARDS ===== */
+.acard{background:var(--s1);border:1px solid var(--border);border-radius:10px;
+  padding:16px;margin-bottom:12px;transition:.2s;}
+.acard:hover{border-color:rgba(0,212,255,.3);}
+.acard-meta{display:flex;gap:6px;margin-bottom:10px;align-items:center;flex-wrap:wrap;}
+.acard-title{font-size:14px;font-weight:600;margin-bottom:8px;line-height:1.5;
+  color:var(--tp);}
+.acard-footer{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;}
+.acard-src{font-size:11px;color:var(--tm);}
+
+/* ===== BADGES ===== */
+.bd{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;}
 .bd-fr{background:var(--cyan);color:#000;}
 .bd-ar{background:var(--purple);color:#fff;}
 .bd-en{background:var(--green);color:#000;}
 .bd-es{background:var(--amber);color:#000;}
+.bd-pt{background:#E9C46A;color:#000;}
 .tag{background:var(--s3);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--tm);}
-.imp{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:var(--s4);color:var(--tp);}
-.imp-critique{background:var(--red);color:#fff;}
-.imp-haute{background:var(--amber);color:#000;}
-.fbtn{background:var(--s2);border:1px solid var(--border);color:var(--tm);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-family:inherit;transition:.2s;}
-.fbtn:hover,.fbtn.on{background:var(--cyan);color:#000;border-color:var(--cyan);}
+.imp-c{background:var(--red);color:#fff;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;}
+.imp-h{background:var(--amber);color:#000;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;}
+.imp-n{background:var(--s3);color:var(--tm);padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;}
+
+/* ===== FILTERS ===== */
 .fbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-.sinp{flex:1;min-width:200px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);color:var(--tp);border-radius:6px;font-family:inherit;font-size:14px;outline:none;}
-.sinp:focus{border-color:var(--cyan);}
-.sel{padding:9px 12px;background:var(--s2);border:1px solid var(--border);color:var(--tp);border-radius:6px;font-family:inherit;font-size:13px;outline:none;cursor:pointer;}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;}
+.fbtn{background:var(--s2);border:1px solid var(--border);color:var(--tm);
+  padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-family:inherit;
+  transition:.15s;font-weight:500;}
+.fbtn:hover,.fbtn.on{background:var(--cyan);color:#000;border-color:var(--cyan);font-weight:700;}
+
+/* ===== SEARCH ===== */
+.sbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.sinp{flex:1;min-width:200px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);
+  color:var(--tp);border-radius:8px;font-family:inherit;font-size:14px;outline:none;transition:.2s;}
+.sinp:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.1);}
+.sinp::placeholder{color:var(--ts);}
+.sel{padding:9px 12px;background:var(--s2);border:1px solid var(--border);color:var(--tp);
+  border-radius:8px;font-family:inherit;font-size:13px;outline:none;cursor:pointer;}
+
+/* ===== MODALS ===== */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;
+  align-items:center;justify-content:center;padding:16px;}
 .modal.on{display:flex;}
-.mbox{background:var(--s1);border:1px solid var(--border);border-radius:12px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;position:relative;}
-.mclose{position:absolute;top:14px;right:14px;background:transparent;border:none;color:var(--tm);font-size:22px;cursor:pointer;line-height:1;z-index:10;}
-.mclose:hover{color:var(--tp);}
-.twrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
-.toast{background:var(--s1);border:1px solid var(--border);border-left:3px solid var(--cyan);color:var(--tp);padding:12px 18px;border-radius:6px;font-size:13px;font-weight:500;animation:tsin .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.mbox{background:var(--s1);border:1px solid var(--border);border-radius:14px;
+  max-width:620px;width:100%;max-height:90vh;overflow-y:auto;position:relative;}
+.mclose{position:absolute;top:14px;right:14px;background:var(--s3);border:none;color:var(--tm);
+  width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;
+  z-index:10;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.mclose:hover{background:var(--s4);color:var(--tp);}
+.mpad{padding:24px;}
+.mhdr{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.mtitle{font-size:18px;font-weight:700;margin-bottom:10px;line-height:1.4;}
+.msynth{background:var(--s3);border-radius:8px;padding:16px;border-left:3px solid var(--cyan);margin-bottom:14px;}
+.msynth-label{font-size:10px;color:var(--cyan);margin-bottom:8px;font-weight:700;letter-spacing:1px;}
+.msynth p{font-size:13px;line-height:1.7;}
+.mfooter{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+
+/* ===== TOAST ===== */
+.twrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;
+  pointer-events:none;max-width:320px;}
+.toast{background:var(--s1);border:1px solid var(--border);border-left:3px solid var(--cyan);
+  color:var(--tp);padding:12px 16px;border-radius:8px;font-size:13px;font-weight:500;
+  animation:tsin .3s ease;box-shadow:0 8px 30px rgba(0,0,0,.4);pointer-events:all;}
 @keyframes tsin{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.plat{font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;}
-.plat-tw{background:#1DA1F2;color:#fff;} .plat-fb{background:#1877F2;color:#fff;} .plat-li{background:#0A66C2;color:#fff;}
-.plat-ig{background:linear-gradient(135deg,#F58529,#DD2A7B,#8134AF);color:#fff;} .plat-yt{background:#FF0000;color:#fff;} .plat-tt{background:#000;color:#fff;}
-.pbar{width:100%;height:6px;background:var(--s3);border-radius:3px;overflow:hidden;}
-.pfill{height:100%;border-radius:3px;}
+
+/* ===== EMPTY STATE ===== */
+.empty{text-align:center;padding:60px 20px;color:var(--tm);}
+.empty-ico{font-size:48px;margin-bottom:16px;}
+.empty h3{font-size:16px;font-weight:600;margin-bottom:8px;color:var(--tp);}
+.empty p{font-size:13px;line-height:1.6;}
+
+/* ===== LOADING ===== */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px;color:var(--tm);}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--cyan);
+  border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== MAP ===== */
 #map-leaflet{height:500px;border-radius:10px;border:1px solid var(--border);}
-.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-.ph h2{font-size:20px;font-weight:700;}
-@media(max-width:768px){.sb{display:none;} .kgrid{grid-template-columns:1fr 1fr;}}
-@media print{.sb,.tb,.modal,.twrap,.ibtn,.gbtn{display:none!important;} .mc{height:auto!important;overflow:visible!important;} #v-app{height:auto!important;overflow:visible!important;}}
+
+/* ===== SOCIAL CARDS ===== */
+.soc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.soc-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.soc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.plat{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;letter-spacing:.5px;}
+.p-tw{background:#1DA1F2;color:#fff;} .p-fb{background:#1877F2;color:#fff;}
+.p-li{background:#0A66C2;color:#fff;} .p-ig{background:linear-gradient(135deg,#F58529,#DD2A7B,#8134AF);color:#fff;}
+.p-yt{background:#FF0000;color:#fff;} .p-tt{background:#000;color:#fff;}
+.soc-author{font-weight:600;font-size:13px;margin-bottom:4px;}
+.soc-handle{font-size:11px;color:var(--tm);}
+.soc-text{font-size:13px;line-height:1.6;margin:10px 0;}
+.soc-stats{font-size:12px;color:var(--tm);display:flex;gap:14px;}
+
+/* ===== VIDEO CARDS ===== */
+.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.vid-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  cursor:pointer;transition:.2s;}
+.vid-card:hover{border-color:rgba(0,212,255,.3);transform:translateY(-2px);}
+.vid-thumb{position:relative;}
+.vid-thumb img{width:100%;height:160px;object-fit:cover;display:block;}
+.vid-dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.85);
+  color:#fff;padding:3px 7px;border-radius:4px;font-size:11px;font-weight:600;}
+.vid-info{padding:14px;}
+.vid-title{font-size:13px;font-weight:600;margin-bottom:6px;line-height:1.4;}
+.vid-meta{font-size:12px;color:var(--tm);}
+
+/* ===== PROGRESS BAR ===== */
+.pbar{width:100%;height:5px;background:var(--s3);border-radius:3px;overflow:hidden;}
+.pfill{height:100%;border-radius:3px;transition:width .5s;}
+
+/* ===== API CONFIG ===== */
+.api-config{background:var(--s2);border:1px dashed var(--border);border-radius:10px;
+  padding:24px;text-align:center;margin-bottom:20px;}
+.api-config h3{font-size:15px;font-weight:600;margin-bottom:8px;}
+.api-config p{font-size:13px;color:var(--tm);line-height:1.6;}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media(max-width:768px){
+  :root{--sb-width:280px;}
+  .sb{position:fixed;left:0;top:0;height:100%;transform:translateX(-100%);z-index:300;}
+  .sb.open{transform:translateX(0);}
+  .hamburger{display:flex;}
+  #v-app.visible{flex-direction:column;}
+  .mc{height:100vh;width:100%;}
+  .kgrid{grid-template-columns:repeat(2,1fr);}
+  .cgrid{grid-template-columns:1fr;}
+  .page{padding:14px;padding-bottom:60px;}
+  .tb{padding:0 14px;}
+  .tb-title{font-size:14px;}
+  .ibtn span{display:none;}
+  .sbar{flex-direction:column;}
+  .sbar .sinp,.sbar .sel{width:100%;}
+  #map-leaflet{height:350px;}
+  .mbox{max-height:95vh;}
+  .fbar{gap:6px;}
+  .fbtn{font-size:11px;padding:5px 10px;}
+}
+@media(max-width:480px){
+  .lbox{padding:28px 20px;}
+  .kgrid{grid-template-columns:1fr 1fr;}
+  .kval{font-size:22px;}
+  .tbright .ibtn:not(:last-child){display:none;}
+}
+@media(min-width:769px) and (max-width:1024px){
+  :root{--sb-width:220px;}
+  .kgrid{grid-template-columns:repeat(3,1fr);}
+}
+@media print{
+  .sb,.tb,.modal,.twrap,.hamburger,.overlay{display:none!important;}
+  .mc{height:auto!important;overflow:visible!important;}
+  #v-app{height:auto!important;overflow:visible!important;}
+  .page.on{display:block!important;padding:0!important;}
+}
 </style>
 </head>
 <body>
@@ -113,253 +306,378 @@ tr:hover td{background:var(--s2);}
 <div id="v-login">
   <div class="lbox">
     <div class="llogo">VIGIA</div>
-    <div class="lsub">Plateforme de Veille Stratégique — v2.0</div>
+    <div class="lver">v2.0</div>
+    <div class="lsub">Plateforme de Veille Stratégique<br>Intelligence & Monitoring</div>
     <div class="lg">
-      <label>Nom d'utilisateur</label>
-      <input type="text" class="li" id="l-user" value="admin" autocomplete="username">
+      <label class="llab" for="l-user">Nom d'utilisateur</label>
+      <input type="text" class="li" id="l-user" placeholder="Entrez votre identifiant"
+        autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('l-pass').focus()">
     </div>
     <div class="lg">
-      <label>Mot de passe</label>
+      <label class="llab" for="l-pass">Mot de passe</label>
       <div class="lrow">
-        <input type="password" class="li" id="l-pass" value="vigia2026" style="flex:1" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-        <button type="button" class="gbtn" onclick="togglePwd()">👁</button>
+        <input type="password" class="li" id="l-pass" placeholder="Entrez votre mot de passe"
+          style="flex:1" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button type="button" class="gbtn" onclick="togglePwd()" title="Afficher/masquer">👁</button>
       </div>
     </div>
-    <button class="btn" style="width:100%;margin-top:8px;" onclick="doLogin()">CONNEXION</button>
-    <div id="lerr">Identifiants incorrects. Réessayez.</div>
-    <div style="margin-top:20px;font-size:12px;color:var(--ts);">Accès réservé aux utilisateurs autorisés</div>
+    <button class="cbtn" id="login-btn" onclick="doLogin()">CONNEXION</button>
+    <div id="lerr">Identifiants incorrects. Veuillez réessayer.</div>
+    <div class="lfoot">
+      <span style="color:var(--cyan);">●</span> Connexion sécurisée &nbsp;·&nbsp; VIGIA Intelligence Platform
+    </div>
   </div>
 </div>
 
 <div id="v-app">
-  <div class="sb">
-    <div class="sblogo">VIGIA<span>Plateforme de Veille</span></div>
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <div class="sb" id="sidebar">
+    <div class="sblogo">
+      <div class="sbname">VIGIA</div>
+      <div class="sbsub">Intelligence & Veille</div>
+    </div>
     <div class="nvsec">
       <div class="nvtitle">Veille</div>
-      <div class="nv on" onclick="go('dashboard',this)">🏠 Tableau de bord</div>
-      <div class="nv" onclick="go('feed',this)">📰 Flux en direct</div>
-      <div class="nv" onclick="go('search',this)">🔍 Recherche</div>
-      <div class="nv" onclick="go('map',this)">🗺️ Cartographie</div>
-      <div class="nv" onclick="go('favorites',this)">⭐ Favoris</div>
-      <div class="nv" onclick="go('social',this)">📱 Réseaux sociaux <span class="bnew">NEW</span></div>
-      <div class="nv" onclick="go('videos',this)">🎬 Vidéos <span class="bnew">NEW</span></div>
+      <div class="nv on" onclick="go('dashboard',this)"><span class="nv-icon">🏠</span> Tableau de bord</div>
+      <div class="nv" onclick="go('feed',this)"><span class="nv-icon">📰</span> Flux en direct</div>
+      <div class="nv" onclick="go('search',this)"><span class="nv-icon">🔍</span> Recherche</div>
+      <div class="nv" onclick="go('map',this)"><span class="nv-icon">🗺️</span> Cartographie</div>
+      <div class="nv" onclick="go('favorites',this)"><span class="nv-icon">⭐</span> Favoris <span class="bnum" id="fav-badge" style="display:none">0</span></div>
+      <div class="nv" onclick="go('social',this)"><span class="nv-icon">📱</span> Réseaux sociaux <span class="bnew">NEW</span></div>
+      <div class="nv" onclick="go('videos',this)"><span class="nv-icon">🎬</span> Vidéos <span class="bnew">NEW</span></div>
     </div>
+    <div class="sbdiv"></div>
     <div class="nvsec">
       <div class="nvtitle">Analyse</div>
-      <div class="nv" onclick="go('alerts',this)">🔔 Alertes <span class="bnum" id="alert-badge">3</span></div>
-      <div class="nv" onclick="go('reports',this)">📋 Rapports</div>
-      <div class="nv" onclick="go('export',this)">📥 Exporter</div>
+      <div class="nv" onclick="go('alerts',this)"><span class="nv-icon">🔔</span> Alertes <span class="bnum" id="alert-badge">3</span></div>
+      <div class="nv" onclick="go('reports',this)"><span class="nv-icon">📋</span> Rapports</div>
+      <div class="nv" onclick="go('export',this)"><span class="nv-icon">📥</span> Exporter</div>
     </div>
+    <div class="sbdiv"></div>
     <div class="nvsec">
       <div class="nvtitle">Administration</div>
-      <div class="nv" onclick="go('admin-users',this)">👥 Utilisateurs</div>
-      <div class="nv" onclick="go('admin-sources',this)">⚙️ Sources</div>
-      <div class="nv" onclick="go('admin-stats',this)">📊 Statistiques</div>
-      <div class="nv" onclick="go('admin-audit',this)">📜 Journal d'audit</div>
+      <div class="nv" onclick="go('admin-users',this)"><span class="nv-icon">👥</span> Utilisateurs</div>
+      <div class="nv" onclick="go('admin-sources',this)"><span class="nv-icon">⚙️</span> Sources</div>
+      <div class="nv" onclick="go('admin-stats',this)"><span class="nv-icon">📊</span> Statistiques</div>
+      <div class="nv" onclick="go('admin-audit',this)"><span class="nv-icon">📜</span> Journal d'audit</div>
     </div>
     <div class="sbfoot">
-      <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
-        <div style="width:32px;height:32px;background:var(--cyan);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;">A</div>
-        <div><div style="font-weight:600;">Admin</div><div style="font-size:11px;color:var(--tm);">Super Admin</div></div>
+      <div class="sbusr">
+        <div class="av" id="user-avatar">A</div>
+        <div>
+          <div class="avname" id="user-name">Admin</div>
+          <div class="avrole">Super Administrateur</div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="mc">
     <div class="tb">
-      <div class="tb-title" id="page-title">Tableau de bord</div>
-      <div class="tb-actions">
-        <button class="ibtn" onclick="toggleTheme()" id="theme-btn">🌙</button>
-        <button class="ibtn" onclick="doLogout()" style="color:var(--red);">⏻ Déconnexion</button>
+      <div class="tb-left">
+        <button class="hamburger" onclick="toggleSidebar()" title="Menu">☰</button>
+        <div class="tb-title" id="page-title">Tableau de bord</div>
+      </div>
+      <div class="tb-right">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green);display:none" id="live-indicator">
+          <span class="live-dot"></span><span>En direct</span>
+        </div>
+        <button class="ibtn" onclick="toggleTheme()" id="theme-btn" title="Changer le thème">🌙</button>
+        <button class="ibtn" onclick="doLogout()" title="Déconnexion" style="color:var(--red);">⏻ <span>Déconnexion</span></button>
       </div>
     </div>
 
-    <!-- DASHBOARD -->
-    <div class="page on" id="page-dashboard">
-      <div class="banner">⚠️ MODE DÉMONSTRATION — Données simulées à des fins de présentation</div>
-      <div class="kgrid">
-        <div class="kcard" style="border-left:3px solid var(--cyan)"><div class="klbl">Articles (24h)</div><div class="kval" style="color:var(--cyan)">1 245</div><div class="kdelta" style="color:var(--green)">↑ +12% vs hier</div></div>
-        <div class="kcard" style="border-left:3px solid var(--red)"><div class="klbl">Alertes critiques</div><div class="kval" style="color:var(--red)">3</div><div class="kdelta" style="color:var(--amber)">2 non lues</div></div>
-        <div class="kcard" style="border-left:3px solid var(--green)"><div class="klbl">Sources actives</div><div class="kval" style="color:var(--green)">428</div><div class="kdelta">sur 430 configurées</div></div>
-        <div class="kcard" style="border-left:3px solid var(--purple)"><div class="klbl">Publications sociales</div><div class="kval" style="color:var(--purple)">8 420</div><div class="kdelta" style="color:var(--green)">↑ +34%</div></div>
-        <div class="kcard" style="border-left:3px solid var(--amber)"><div class="klbl">Couverture géo.</div><div class="kval" style="color:var(--amber)">47</div><div class="kdelta">pays couverts</div></div>
+    <div class="pages-wrap">
+
+      <!-- DASHBOARD -->
+      <div class="page on" id="page-dashboard">
+        <div class="page-hdr">
+          <h2>Tableau de bord</h2>
+          <div style="font-size:12px;color:var(--tm)" id="dash-updated"></div>
+        </div>
+        <div class="kgrid" id="dash-kpis">
+          <div class="kcard" style="border-left:3px solid var(--cyan)"><div class="klbl">Articles chargés</div><div class="kval" style="color:var(--cyan)" id="k-articles">—</div><div class="kdelta" id="k-sources-count">Chargement...</div></div>
+          <div class="kcard" style="border-left:3px solid var(--red)"><div class="klbl">Alertes actives</div><div class="kval" style="color:var(--red)" id="k-alerts">3</div><div class="kdelta" style="color:var(--amber)">2 non lues</div></div>
+          <div class="kcard" style="border-left:3px solid var(--green)"><div class="klbl">Sources RSS</div><div class="kval" style="color:var(--green)" id="k-sources">0</div><div class="kdelta" id="k-sources-status">Connexion...</div></div>
+          <div class="kcard" style="border-left:3px solid var(--purple)"><div class="klbl">Langues couvertes</div><div class="kval" style="color:var(--purple)" id="k-langs">5</div><div class="kdelta">AR · FR · EN · ES · PT</div></div>
+          <div class="kcard" style="border-left:3px solid var(--amber)"><div class="klbl">Pays couverts</div><div class="kval" style="color:var(--amber)">47</div><div class="kdelta">zones géopolitiques</div></div>
+        </div>
+        <div class="cgrid" style="grid-template-columns:2fr 1fr">
+          <div class="card"><div class="card-title">Volume d'articles <span style="font-size:11px;color:var(--tm);font-weight:400" id="vol-updated"></span></div><div class="cwrap"><canvas id="ch-vol"></canvas></div></div>
+          <div class="card"><div class="card-title">Répartition par langue</div><div class="cwrap"><canvas id="ch-lang"></canvas></div></div>
+        </div>
+        <div class="cgrid">
+          <div class="card"><div class="card-title">Tendances — Entités clés</div><div id="dash-trends"></div></div>
+          <div class="card"><div class="card-title">Dernières alertes</div><div id="dash-alerts"></div></div>
+        </div>
       </div>
-      <div class="cgrid" style="grid-template-columns:2fr 1fr">
-        <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h3>Volume (7 jours)</h3></div><div class="cwrap"><canvas id="ch-vol"></canvas></div></div>
-        <div class="card"><h3 style="margin-bottom:14px">Langues</h3><div class="cwrap"><canvas id="ch-lang"></canvas></div></div>
+
+      <!-- FLUX EN DIRECT -->
+      <div class="page" id="page-feed">
+        <div class="page-hdr">
+          <h2>Flux en direct</h2>
+          <button class="gbtn" onclick="loadRSS(true)">🔄 Actualiser</button>
+        </div>
+        <div class="status-bar" id="feed-status">
+          <span class="live-dot"></span> Connexion aux sources RSS...
+        </div>
+        <div class="fbar" id="feed-fbar">
+          <button class="fbtn on" onclick="filterFeed('all',this)">Tous</button>
+          <button class="fbtn" onclick="filterFeed('Politique',this)">Politique</button>
+          <button class="fbtn" onclick="filterFeed('Sécurité',this)">Sécurité</button>
+          <button class="fbtn" onclick="filterFeed('Diplomatie',this)">Diplomatie</button>
+          <button class="fbtn" onclick="filterFeed('Économie',this)">Économie</button>
+          <button class="fbtn" onclick="filterFeed('FR',this)">🇫🇷 FR</button>
+          <button class="fbtn" onclick="filterFeed('AR',this)">🇲🇦 AR</button>
+          <button class="fbtn" onclick="filterFeed('EN',this)">🇬🇧 EN</button>
+        </div>
+        <div id="feed-list">
+          <div class="loading"><div class="spinner"></div>Chargement des articles en cours...</div>
+        </div>
       </div>
-      <div class="cgrid">
-        <div class="card"><h3 style="margin-bottom:14px">Tendances — Entités clés</h3><div id="dash-trends"></div></div>
-        <div class="card"><h3 style="margin-bottom:14px">Dernières alertes</h3><div id="dash-alerts"></div></div>
+
+      <!-- RECHERCHE -->
+      <div class="page" id="page-search">
+        <div class="page-hdr"><h2>Recherche avancée</h2></div>
+        <div class="sbar">
+          <input type="text" class="sinp" id="s-inp" placeholder="Rechercher dans tous les articles..."
+            onkeydown="if(event.key==='Enter')doSearch()">
+          <select class="sel" id="s-type">
+            <option value="simple">Simple</option>
+            <option value="bool">Booléenne</option>
+            <option value="sem">Sémantique</option>
+          </select>
+          <select class="sel" id="s-src">
+            <option value="all">Tous types</option>
+            <option value="article">Articles</option>
+            <option value="social">Réseaux sociaux</option>
+            <option value="video">Vidéos</option>
+          </select>
+          <button class="cbtn" style="width:auto;padding:10px 20px;" onclick="doSearch()">🔍 Rechercher</button>
+        </div>
+        <div id="s-meta" style="font-size:13px;color:var(--tm);margin-bottom:14px;"></div>
+        <div id="s-results">
+          <div class="empty"><div class="empty-ico">🔍</div><h3>Lancez une recherche</h3><p>Saisissez un terme pour rechercher dans les articles, réseaux sociaux et vidéos.</p></div>
+        </div>
       </div>
-    </div>
 
-    <!-- FLUX -->
-    <div class="page" id="page-feed">
-      <div class="banner">⚠️ MODE DÉMONSTRATION — Données simulées</div>
-      <div class="fbar" id="feed-fbar">
-        <button class="fbtn on" onclick="filterFeed('all',this)">Tous</button>
-        <button class="fbtn" onclick="filterFeed('Politique',this)">Politique</button>
-        <button class="fbtn" onclick="filterFeed('Sécurité',this)">Sécurité</button>
-        <button class="fbtn" onclick="filterFeed('Diplomatie',this)">Diplomatie</button>
-        <button class="fbtn" onclick="filterFeed('Économie',this)">Économie</button>
-        <button class="fbtn" onclick="filterFeed('FR',this)">🇫🇷 FR</button>
-        <button class="fbtn" onclick="filterFeed('AR',this)">🇲🇦 AR</button>
-        <button class="fbtn" onclick="filterFeed('EN',this)">🇬🇧 EN</button>
+      <!-- CARTOGRAPHIE -->
+      <div class="page" id="page-map">
+        <div class="page-hdr">
+          <h2>Cartographie géopolitique</h2>
+          <div style="font-size:12px;color:var(--tm)">OpenStreetMap · Données en direct</div>
+        </div>
+        <div id="map-leaflet"></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;" id="map-legend">
+        </div>
       </div>
-      <div id="feed-list"></div>
-    </div>
 
-    <!-- RECHERCHE -->
-    <div class="page" id="page-search">
-      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-        <input type="text" class="sinp" id="s-inp" placeholder="Rechercher : Maroc, Sahara, diplomatie..." onkeydown="if(event.key==='Enter')doSearch()">
-        <select class="sel" id="s-type"><option value="simple">Simple</option><option value="bool">Booléenne</option><option value="sem">Sémantique</option></select>
-        <select class="sel" id="s-src"><option value="all">Tous types</option><option value="article">Articles</option><option value="social">Réseaux sociaux</option><option value="video">Vidéos</option></select>
-        <button class="btn" onclick="doSearch()">🔍 Rechercher</button>
+      <!-- FAVORIS -->
+      <div class="page" id="page-favorites">
+        <div class="page-hdr"><h2>Favoris <span id="fav-count" style="font-size:14px;color:var(--tm);font-weight:400"></span></h2>
+        <button class="gbtn" onclick="clearFavs()" id="fav-clear" style="display:none">🗑 Effacer tout</button></div>
+        <div id="fav-list"></div>
       </div>
-      <div id="s-meta" style="font-size:13px;color:var(--tm);margin-bottom:12px;"></div>
-      <div id="s-results"></div>
-    </div>
 
-    <!-- CARTE -->
-    <div class="page" id="page-map">
-      <div class="banner">⚠️ MODE DÉMONSTRATION — Carte OpenStreetMap, données simulées</div>
-      <div id="map-leaflet"></div>
-    </div>
-
-    <!-- FAVORIS -->
-    <div class="page" id="page-favorites">
-      <div class="ph"><h2>Favoris <span id="fav-count" style="font-size:14px;color:var(--tm);font-weight:400;"></span></h2></div>
-      <div id="fav-list"><div class="card" style="text-align:center;padding:40px;color:var(--tm);"><div style="font-size:40px;margin-bottom:12px">⭐</div><div>Aucun favori. Ouvrez un article et ajoutez-le.</div></div></div>
-    </div>
-
-    <!-- RÉSEAUX SOCIAUX -->
-    <div class="page" id="page-social">
-      <div class="banner">📱 DONNÉES SIMULÉES — Connexion aux API réelles à configurer en production</div>
-      <div class="fbar" id="social-fbar">
-        <button class="fbtn on" onclick="filterSocial('all',this)">Toutes plateformes</button>
-        <button class="fbtn" onclick="filterSocial('Twitter/X',this)">Twitter/X</button>
-        <button class="fbtn" onclick="filterSocial('Facebook',this)">Facebook</button>
-        <button class="fbtn" onclick="filterSocial('LinkedIn',this)">LinkedIn</button>
-        <button class="fbtn" onclick="filterSocial('YouTube',this)">YouTube</button>
-        <button class="fbtn" onclick="filterSocial('Instagram',this)">Instagram</button>
-        <button class="fbtn" onclick="filterSocial('TikTok',this)">TikTok</button>
+      <!-- RÉSEAUX SOCIAUX -->
+      <div class="page" id="page-social">
+        <div class="page-hdr"><h2>Réseaux sociaux</h2></div>
+        <div class="api-config">
+          <div style="font-size:32px;margin-bottom:12px">📱</div>
+          <h3>Module Réseaux Sociaux — Configuration requise</h3>
+          <p style="margin:8px 0 16px">Ce module nécessite la connexion aux APIs des plateformes.<br>
+          Contactez l'administrateur pour activer Twitter/X, Facebook, LinkedIn, Instagram.</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
+            <span style="background:var(--s3);padding:8px 16px;border-radius:20px;font-size:12px">Twitter/X API</span>
+            <span style="background:var(--s3);padding:8px 16px;border-radius:20px;font-size:12px">Facebook Graph API</span>
+            <span style="background:var(--s3);padding:8px 16px;border-radius:20px;font-size:12px">LinkedIn API</span>
+            <span style="background:var(--s3);padding:8px 16px;border-radius:20px;font-size:12px">Instagram Basic API</span>
+          </div>
+        </div>
+        <div id="social-list" style="display:none">
+          <div class="soc-grid" id="social-grid"></div>
+        </div>
       </div>
-      <div id="social-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;"></div>
-    </div>
 
-    <!-- VIDÉOS -->
-    <div class="page" id="page-videos">
-      <div class="banner">🎬 DONNÉES SIMULÉES — API YouTube à connecter en production</div>
-      <div id="video-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;"></div>
-    </div>
-
-    <!-- ALERTES -->
-    <div class="page" id="page-alerts">
-      <div class="ph">
-        <h2>Alertes</h2>
-        <select class="sel" id="alert-filter" onchange="renderAlerts()"><option value="all">Toutes priorités</option><option value="CRITIQUE">Critique</option><option value="HAUTE">Haute</option><option value="NORMALE">Normale</option></select>
+      <!-- VIDÉOS -->
+      <div class="page" id="page-videos">
+        <div class="page-hdr"><h2>Vidéos</h2></div>
+        <div class="api-config">
+          <div style="font-size:32px;margin-bottom:12px">🎬</div>
+          <h3>Module Vidéos — Configuration requise</h3>
+          <p style="margin:8px 0 16px">Ce module nécessite une clé API YouTube Data v3 ou Vimeo.<br>
+          Configurez votre clé API dans le panneau d'administration pour activer ce module.</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
+            <span style="background:var(--s3);padding:8px 16px;border-radius:20px;font-size:12px">YouTube Data API v3</span>
+            <span style="background:var(--s3);padding:8px 16px;border-radius:20px;font-size:12px">Vimeo API</span>
+            <span style="background:var(--s3);padding:8px 16px;border-radius:20px;font-size:12px">Dailymotion API</span>
+          </div>
+          <button class="cbtn" style="width:auto;padding:10px 20px;margin-top:16px" onclick="go('admin-sources',document.querySelector('.nv[onclick*=admin-sources]'))">
+            ⚙️ Configurer les APIs
+          </button>
+        </div>
+        <div id="video-list" style="display:none"><div class="vid-grid" id="vid-grid"></div></div>
       </div>
-      <div class="card"><table><thead><tr><th>Priorité</th><th>Titre</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="alerts-tb"></tbody></table></div>
-    </div>
 
-    <!-- RAPPORTS -->
-    <div class="page" id="page-reports">
-      <div class="ph"><h2>Rapports</h2><button class="btn" onclick="openRptModal()">+ Nouveau rapport</button></div>
-      <div class="card"><table><thead><tr><th>Titre</th><th>Période</th><th>Catégories</th><th>Créé le</th><th>Actions</th></tr></thead>
-        <tbody id="reports-tb">
-          <tr><td><strong>Rapport mensuel — Août 2026</strong></td><td>01/08 – 31/08/2026</td><td>Politique, Diplomatie</td><td>01/09/2026</td><td><button class="gbtn" onclick="exportPDF()">📥 PDF</button></td></tr>
-          <tr><td><strong>Synthèse S36</strong></td><td>02/09 – 08/09/2026</td><td>Sécurité, Économie</td><td>09/09/2026</td><td><button class="gbtn" onclick="exportPDF()">📥 PDF</button></td></tr>
-        </tbody>
-      </table></div>
-    </div>
-
-    <!-- EXPORT -->
-    <div class="page" id="page-export">
-      <div class="ph"><h2>Centre d'export</h2></div>
-      <div class="cgrid">
-        <div class="card" style="text-align:center"><h3 style="margin-bottom:8px">📄 CSV</h3><p style="font-size:13px;color:var(--tm);margin-bottom:16px">Articles et données structurées</p><button class="btn" onclick="exportCSV()">Télécharger CSV</button></div>
-        <div class="card" style="text-align:center"><h3 style="margin-bottom:8px">🔧 JSON</h3><p style="font-size:13px;color:var(--tm);margin-bottom:16px">Données complètes JSON</p><button class="btn" onclick="exportJSON()">Télécharger JSON</button></div>
-        <div class="card" style="text-align:center"><h3 style="margin-bottom:8px">🖨️ PDF</h3><p style="font-size:13px;color:var(--tm);margin-bottom:16px">Impression / PDF navigateur</p><button class="btn" onclick="exportPDF()">Imprimer / PDF</button></div>
-        <div class="card" style="text-align:center;opacity:.6"><h3 style="margin-bottom:8px">📊 Excel/Word</h3><p style="font-size:13px;color:var(--tm);margin-bottom:16px">Disponible avec backend</p><button class="btn" disabled>Bientôt</button></div>
+      <!-- ALERTES -->
+      <div class="page" id="page-alerts">
+        <div class="page-hdr">
+          <h2>Alertes</h2>
+          <div style="display:flex;gap:8px">
+            <select class="sel" id="alert-filter" onchange="renderAlerts()">
+              <option value="all">Toutes priorités</option>
+              <option value="CRITIQUE">Critique uniquement</option>
+              <option value="HAUTE">Haute uniquement</option>
+              <option value="NORMALE">Normale uniquement</option>
+            </select>
+            <select class="sel" id="alert-read-filter" onchange="renderAlerts()">
+              <option value="all">Toutes</option>
+              <option value="unread">Non lues</option>
+              <option value="read">Lues</option>
+            </select>
+          </div>
+        </div>
+        <div class="card tscroll">
+          <table>
+            <thead><tr><th>Priorité</th><th>Titre</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody id="alerts-tb"></tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <!-- ADMIN UTILISATEURS -->
-    <div class="page" id="page-admin-users">
-      <div class="ph"><h2>Gestion des utilisateurs</h2><button class="btn" onclick="toast('Fonctionnalité disponible avec le backend')">+ Ajouter</button></div>
-      <div class="card"><table><thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Dernière connexion</th><th>Actions</th></tr></thead>
-        <tbody>
-          <tr><td><strong>Admin Principal</strong></td><td>admin@vigia.ma</td><td><span style="background:var(--red);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px">Super Admin</span></td><td style="color:var(--green)">● Actif</td><td>Maintenant</td><td><button class="gbtn" onclick="toast('Profil ouvert')">Éditer</button></td></tr>
-          <tr><td>Analyste 1</td><td>analyste1@vigia.ma</td><td><span style="background:var(--cyan);color:#000;padding:2px 8px;border-radius:4px;font-size:11px">Analyste</span></td><td style="color:var(--green)">● Actif</td><td>il y a 2h</td><td><button class="gbtn" onclick="toast('Profil ouvert')">Éditer</button></td></tr>
-          <tr><td>Observateur 1</td><td>obs1@vigia.ma</td><td><span style="background:var(--s4);color:var(--tp);padding:2px 8px;border-radius:4px;font-size:11px">Observateur</span></td><td style="color:var(--amber)">● Inactif</td><td>il y a 3 jours</td><td><button class="gbtn" onclick="toast('Profil ouvert')">Éditer</button></td></tr>
-        </tbody>
-      </table></div>
-    </div>
-
-    <!-- ADMIN SOURCES -->
-    <div class="page" id="page-admin-sources">
-      <div class="ph"><h2>Sources <span style="font-size:13px;color:var(--tm);font-weight:400">20 affichées sur 430 configurées (données simulées)</span></h2></div>
-      <div class="card"><table><thead><tr><th>Source</th><th>Type</th><th>Langue</th><th>Pays</th><th>Fiabilité</th><th>Fréquence</th><th>Articles</th><th>Statut</th></tr></thead><tbody id="src-tb"></tbody></table></div>
-    </div>
-
-    <!-- ADMIN STATS -->
-    <div class="page" id="page-admin-stats">
-      <div class="kgrid">
-        <div class="kcard"><div class="klbl">Requêtes / jour</div><div class="kval">12 450</div></div>
-        <div class="kcard"><div class="klbl">Articles traités</div><div class="kval">48 230</div></div>
-        <div class="kcard"><div class="klbl">Disponibilité</div><div class="kval" style="color:var(--green)">99.8%</div></div>
+      <!-- RAPPORTS -->
+      <div class="page" id="page-reports">
+        <div class="page-hdr"><h2>Rapports</h2><button class="cbtn" style="width:auto;padding:9px 18px" onclick="openRptModal()">+ Nouveau rapport</button></div>
+        <div class="card tscroll">
+          <table>
+            <thead><tr><th>Titre</th><th>Période</th><th>Catégories</th><th>Créé le</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody id="reports-tb">
+              <tr><td><strong>Rapport mensuel — Août 2026</strong></td><td>01/08 – 31/08/2026</td><td>Politique, Diplomatie</td><td>01/09/2026</td><td><span style="color:var(--green)">● Finalisé</span></td><td><button class="gbtn" onclick="exportPDF()">📥 PDF</button></td></tr>
+              <tr><td><strong>Synthèse hebdomadaire S36</strong></td><td>02/09 – 08/09/2026</td><td>Sécurité, Économie</td><td>09/09/2026</td><td><span style="color:var(--green)">● Finalisé</span></td><td><button class="gbtn" onclick="exportPDF()">📥 PDF</button></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="card"><h3 style="margin-bottom:14px">Activité système (7 jours)</h3><div class="cwrap"><canvas id="ch-sys"></canvas></div></div>
-    </div>
 
-    <!-- ADMIN AUDIT -->
-    <div class="page" id="page-admin-audit">
-      <div class="ph"><h2>Journal d'audit</h2><button class="gbtn" onclick="exportJSON()">📥 Exporter</button></div>
-      <div class="card"><table><thead><tr><th>Date / Heure</th><th>Utilisateur</th><th>Action</th><th>IP</th><th>Statut</th></tr></thead>
-        <tbody>
-          <tr><td style="font-size:12px">2026-09-16 12:10</td><td>admin</td><td>Connexion au système</td><td>192.168.1.10</td><td style="color:var(--green)">✓ Succès</td></tr>
-          <tr><td style="font-size:12px">2026-09-16 08:15</td><td>analyste1</td><td>Export CSV — Articles</td><td>192.168.1.12</td><td style="color:var(--green)">✓ Succès</td></tr>
-          <tr><td style="font-size:12px">2026-09-15 23:30</td><td>admin</td><td>Modification source : Al Jazeera AR</td><td>192.168.1.10</td><td style="color:var(--green)">✓ Succès</td></tr>
-          <tr><td style="font-size:12px">2026-09-15 20:08</td><td>obs1</td><td>Tentative de connexion</td><td>10.0.0.55</td><td style="color:var(--red)">✗ Échec</td></tr>
-          <tr><td style="font-size:12px">2026-09-15 18:00</td><td>admin</td><td>Génération rapport mensuel Août 2026</td><td>192.168.1.10</td><td style="color:var(--green)">✓ Succès</td></tr>
-          <tr><td style="font-size:12px">2026-09-14 14:22</td><td>analyste1</td><td>Ajout alerte : Mouvement diplomatique</td><td>192.168.1.12</td><td style="color:var(--green)">✓ Succès</td></tr>
-        </tbody>
-      </table></div>
-    </div>
+      <!-- EXPORT -->
+      <div class="page" id="page-export">
+        <div class="page-hdr"><h2>Centre d'export</h2></div>
+        <div class="cgrid">
+          <div class="card" style="text-align:center">
+            <div style="font-size:36px;margin-bottom:12px">📄</div>
+            <h3 style="margin-bottom:8px">Export CSV</h3>
+            <p style="font-size:13px;color:var(--tm);margin-bottom:18px">Articles chargés, format tableur</p>
+            <button class="cbtn" onclick="exportCSV()">Télécharger CSV</button>
+          </div>
+          <div class="card" style="text-align:center">
+            <div style="font-size:36px;margin-bottom:12px">🔧</div>
+            <h3 style="margin-bottom:8px">Export JSON</h3>
+            <p style="font-size:13px;color:var(--tm);margin-bottom:18px">Données structurées complètes</p>
+            <button class="cbtn" onclick="exportJSON()">Télécharger JSON</button>
+          </div>
+          <div class="card" style="text-align:center">
+            <div style="font-size:36px;margin-bottom:12px">🖨️</div>
+            <h3 style="margin-bottom:8px">Impression / PDF</h3>
+            <p style="font-size:13px;color:var(--tm);margin-bottom:18px">Imprimer ou sauvegarder en PDF</p>
+            <button class="cbtn" onclick="exportPDF()">Imprimer / PDF</button>
+          </div>
+          <div class="card" style="text-align:center;opacity:.6">
+            <div style="font-size:36px;margin-bottom:12px">📊</div>
+            <h3 style="margin-bottom:8px">Excel / Word</h3>
+            <p style="font-size:13px;color:var(--tm);margin-bottom:18px">Disponible avec le backend serveur</p>
+            <button class="cbtn" disabled>Bientôt disponible</button>
+          </div>
+        </div>
+      </div>
 
+      <!-- ADMIN USERS -->
+      <div class="page" id="page-admin-users">
+        <div class="page-hdr"><h2>Gestion des utilisateurs</h2><button class="cbtn" style="width:auto;padding:9px 18px" onclick="toast('Fonctionnalité disponible avec le backend complet','warning')">+ Ajouter un utilisateur</button></div>
+        <div class="card tscroll">
+          <table>
+            <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Dernière connexion</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Admin Principal</strong></td><td>admin@vigia.ma</td><td><span class="imp-c">Super Admin</span></td><td style="color:var(--green)">● Actif</td><td id="last-login-cell">—</td><td><button class="gbtn" onclick="toast('Profil admin')">Éditer</button></td></tr>
+              <tr><td>Analyste 1</td><td>analyste1@vigia.ma</td><td><span style="background:var(--cyan);color:#000;padding:2px 8px;border-radius:4px;font-size:11px">Analyste</span></td><td style="color:var(--green)">● Actif</td><td>il y a 2h</td><td><button class="gbtn" onclick="toast('Profil ouvert')">Éditer</button></td></tr>
+              <tr><td>Observateur 1</td><td>obs1@vigia.ma</td><td><span style="background:var(--s4);color:var(--tp);padding:2px 8px;border-radius:4px;font-size:11px">Observateur</span></td><td style="color:var(--amber)">● Inactif</td><td>il y a 3 jours</td><td><button class="gbtn" onclick="toast('Profil ouvert')">Éditer</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADMIN SOURCES -->
+      <div class="page" id="page-admin-sources">
+        <div class="page-hdr">
+          <h2>Sources <span style="font-size:13px;color:var(--tm);font-weight:400" id="src-count-label"></span></h2>
+          <button class="cbtn" style="width:auto;padding:9px 18px" onclick="toast('Sources actualisées','success');loadRSS(true)">🔄 Actualiser tout</button>
+        </div>
+        <div class="card tscroll">
+          <table>
+            <thead><tr><th>Source</th><th>Type</th><th>Langue</th><th>URL RSS</th><th>Fiabilité</th><th>Articles</th><th>Statut</th></tr></thead>
+            <tbody id="src-tb"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADMIN STATS -->
+      <div class="page" id="page-admin-stats">
+        <div class="page-hdr"><h2>Statistiques système</h2></div>
+        <div class="kgrid">
+          <div class="kcard"><div class="klbl">Articles traités</div><div class="kval" id="stat-articles">—</div></div>
+          <div class="kcard"><div class="klbl">Sources RSS actives</div><div class="kval" id="stat-sources">—</div><div class="kdelta" style="color:var(--green)">● En ligne</div></div>
+          <div class="kcard"><div class="klbl">Disponibilité</div><div class="kval" style="color:var(--green)">99.9%</div></div>
+          <div class="kcard"><div class="klbl">Langues indexées</div><div class="kval">5</div></div>
+        </div>
+        <div class="card"><div class="card-title">Répartition par source</div><div class="cwrap"><canvas id="ch-src"></canvas></div></div>
+      </div>
+
+      <!-- ADMIN AUDIT -->
+      <div class="page" id="page-admin-audit">
+        <div class="page-hdr"><h2>Journal d'audit</h2><button class="gbtn" onclick="exportAuditJSON()">📥 Exporter</button></div>
+        <div class="card tscroll">
+          <table>
+            <thead><tr><th>Date / Heure</th><th>Utilisateur</th><th>Action</th><th>IP</th><th>Statut</th></tr></thead>
+            <tbody id="audit-tb"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /pages-wrap -->
   </div><!-- /mc -->
 </div><!-- /v-app -->
 
-<!-- MODAL ARTICLE -->
+<!-- ARTICLE MODAL -->
 <div id="art-modal" class="modal" onclick="if(event.target.id==='art-modal')closeArt()">
   <div class="mbox"><button class="mclose" onclick="closeArt()">×</button><div id="art-body"></div></div>
 </div>
-<!-- MODAL ALERTE -->
+<!-- ALERTE MODAL -->
 <div id="alert-modal" class="modal" onclick="if(event.target.id==='alert-modal')closeAlertModal()">
   <div class="mbox"><button class="mclose" onclick="closeAlertModal()">×</button><div id="alert-body"></div></div>
 </div>
-<!-- MODAL RAPPORT -->
+<!-- RAPPORT MODAL -->
 <div id="rpt-modal" class="modal" onclick="if(event.target.id==='rpt-modal')closeRptModal()">
   <div class="mbox" style="max-width:500px">
     <button class="mclose" onclick="closeRptModal()">×</button>
-    <div style="padding:24px">
-      <h2 style="color:var(--cyan);margin-bottom:20px">Nouveau rapport</h2>
-      <div style="margin-bottom:14px"><label style="font-size:12px;color:var(--tm)">Titre</label><input type="text" class="sinp" id="rpt-title" placeholder="Ex: Synthèse S37" style="width:100%;margin-top:6px"></div>
+    <div class="mpad">
+      <div class="mtitle">Nouveau rapport</div>
+      <div style="margin-bottom:14px"><label class="llab">Titre du rapport</label>
+        <input type="text" class="sinp" id="rpt-title" placeholder="Ex: Synthèse hebdomadaire S37" style="width:100%;margin-top:6px"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div><label style="font-size:12px;color:var(--tm)">Date début</label><input type="date" class="sinp" id="rpt-start" style="width:100%;margin-top:6px"></div>
-        <div><label style="font-size:12px;color:var(--tm)">Date fin</label><input type="date" class="sinp" id="rpt-end" style="width:100%;margin-top:6px"></div>
+        <div><label class="llab">Date début</label><input type="date" class="sinp" id="rpt-start" style="width:100%;margin-top:6px"></div>
+        <div><label class="llab">Date fin</label><input type="date" class="sinp" id="rpt-end" style="width:100%;margin-top:6px"></div>
       </div>
-      <div style="margin-bottom:20px"><label style="font-size:12px;color:var(--tm)">Catégories</label>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px">
-          <label style="cursor:pointer;font-size:13px"><input type="checkbox" value="Politique" checked> Politique</label>
-          <label style="cursor:pointer;font-size:13px"><input type="checkbox" value="Sécurité"> Sécurité</label>
-          <label style="cursor:pointer;font-size:13px"><input type="checkbox" value="Diplomatie" checked> Diplomatie</label>
-          <label style="cursor:pointer;font-size:13px"><input type="checkbox" value="Économie"> Économie</label>
+      <div style="margin-bottom:20px"><label class="llab">Catégories</label>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px" id="rpt-cats">
+          <label style="cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="Politique" checked> Politique</label>
+          <label style="cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="Sécurité"> Sécurité</label>
+          <label style="cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="Diplomatie" checked> Diplomatie</label>
+          <label style="cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px"><input type="checkbox" value="Économie"> Économie</label>
         </div>
       </div>
-      <div style="display:flex;gap:10px"><button class="btn" onclick="createReport()">Générer</button><button class="gbtn" onclick="closeRptModal()">Annuler</button></div>
+      <div style="display:flex;gap:10px">
+        <button class="cbtn" onclick="createReport()">Générer le rapport</button>
+        <button class="gbtn" onclick="closeRptModal()">Annuler</button>
+      </div>
       <div id="rpt-err" style="color:var(--red);font-size:13px;margin-top:10px;display:none"></div>
     </div>
   </div>
@@ -368,182 +686,337 @@ tr:hover td{background:var(--s2);}
 <div class="twrap" id="twrap"></div>
 
 <script>
-// ===== THÈME =====
+'use strict';
+
+// ===== THEME =====
 (function(){
   var t = localStorage.getItem('vigia-theme') || 'dark';
   document.documentElement.dataset.theme = t;
-  var btn = document.getElementById('theme-btn');
-  if(btn) btn.innerText = t==='light' ? '☀️' : '🌙';
+  var b = document.getElementById('theme-btn');
+  if(b) b.innerText = t === 'light' ? '☀️' : '🌙';
 })();
 function toggleTheme(){
   var isL = document.documentElement.dataset.theme === 'light';
-  document.documentElement.dataset.theme = isL ? 'dark' : 'light';
-  localStorage.setItem('vigia-theme', isL ? 'dark' : 'light');
+  var t = isL ? 'dark' : 'light';
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem('vigia-theme', t);
   document.getElementById('theme-btn').innerText = isL ? '🌙' : '☀️';
 }
 
-// ===== LOGIN / LOGOUT =====
+// ===== SIDEBAR MOBILE =====
+function toggleSidebar(){
+  var sb = document.getElementById('sidebar');
+  var ov = document.getElementById('overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('on');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('on');
+}
+
+// ===== AUDIT LOG =====
+var AUDIT_LOG = [];
+function addAudit(user, action, status){
+  AUDIT_LOG.unshift({date: new Date().toLocaleString('fr-FR'), user: user || 'admin', action: action, ip: '—', status: status || 'SUCCESS'});
+  renderAuditLog();
+}
+function renderAuditLog(){
+  var tb = document.getElementById('audit-tb');
+  if(!tb) return;
+  tb.innerHTML = AUDIT_LOG.slice(0,50).map(function(l){
+    return '<tr><td style="font-size:12px">'+l.date+'</td><td>'+l.user+'</td><td>'+l.action+'</td><td style="font-size:12px;color:var(--tm)">'+l.ip+'</td><td style="color:'+(l.status==='SUCCESS'?'var(--green)':'var(--red)')+'">'+( l.status==='SUCCESS'?'✓ Succès':'✗ Échec')+'</td></tr>';
+  }).join('');
+}
+function exportAuditJSON(){
+  dl(JSON.stringify(AUDIT_LOG, null, 2), 'vigia-audit-'+new Date().toISOString().slice(0,10)+'.json', 'application/json');
+  toast('Journal exporté', 'success');
+}
+
+// ===== LOGIN =====
+var CURRENT_USER = null;
 function togglePwd(){
   var p = document.getElementById('l-pass');
   p.type = p.type === 'password' ? 'text' : 'password';
 }
 function doLogin(){
-  var u = document.getElementById('l-user').value;
-  var p = document.getElementById('l-pass').value;
+  var u = (document.getElementById('l-user').value || '').trim();
+  var p = (document.getElementById('l-pass').value || '').trim();
   var err = document.getElementById('lerr');
+  var btn = document.getElementById('login-btn');
   err.style.display = 'none';
+  if(!u || !p){ err.innerText = 'Veuillez remplir tous les champs.'; err.style.display = 'block'; return; }
   if(u === 'admin' && p === 'vigia2026'){
-    document.getElementById('v-login').classList.add('hidden');
-    document.getElementById('v-app').classList.add('visible');
-    if(!window.chartsReady){ initCharts(); window.chartsReady = true; }
-    renderDashboard();
+    CURRENT_USER = u;
+    btn.disabled = true; btn.innerText = 'Connexion...';
+    setTimeout(function(){
+      document.getElementById('v-login').classList.add('hidden');
+      document.getElementById('v-app').classList.add('visible');
+      document.getElementById('user-name').innerText = u.charAt(0).toUpperCase() + u.slice(1);
+      document.getElementById('user-avatar').innerText = u.charAt(0).toUpperCase();
+      var now = new Date().toLocaleString('fr-FR');
+      var cell = document.getElementById('last-login-cell');
+      if(cell) cell.innerText = now;
+      addAudit(u, 'Connexion au système', 'SUCCESS');
+      if(!window.chartsReady){ initCharts(); window.chartsReady = true; }
+      renderDashboard();
+      loadRSS(false);
+      loadFavorites();
+      renderAlerts();
+      renderAuditLog();
+      renderSources();
+      btn.disabled = false; btn.innerText = 'CONNEXION';
+    }, 600);
   } else {
+    err.innerText = 'Identifiants incorrects. Veuillez réessayer.';
     err.style.display = 'block';
+    addAudit(u, 'Tentative de connexion échouée', 'FAILURE');
+    document.getElementById('l-pass').value = '';
+    document.getElementById('l-pass').focus();
   }
 }
 function doLogout(){
+  if(!confirm('Voulez-vous vraiment vous déconnecter ?')) return;
+  addAudit(CURRENT_USER || 'admin', 'Déconnexion', 'SUCCESS');
+  CURRENT_USER = null;
   document.getElementById('v-app').classList.remove('visible');
   document.getElementById('v-login').classList.remove('hidden');
+  document.getElementById('l-user').value = '';
+  document.getElementById('l-pass').value = '';
   if(mapInst){ try{ mapInst.remove(); }catch(e){} mapInst = null; }
   window.chartsReady = false;
+  window.sysChartReady = false;
+  closeSidebar();
 }
 
 // ===== NAVIGATION =====
-var TITLES = {dashboard:'Tableau de bord',feed:'Flux en direct',search:'Recherche',map:'Cartographie',favorites:'Favoris',social:'Réseaux sociaux',videos:'Vidéos',alerts:'Alertes',reports:'Rapports',export:'Exporter','admin-users':'Utilisateurs','admin-sources':'Sources','admin-stats':'Statistiques','admin-audit':"Journal d'audit"};
+var PAGE_TITLES = {
+  dashboard:'Tableau de bord', feed:'Flux en direct', search:'Recherche avancée',
+  map:'Cartographie géopolitique', favorites:'Favoris', social:'Réseaux sociaux',
+  videos:'Vidéos', alerts:'Alertes', reports:'Rapports', export:'Centre d\'export',
+  'admin-users':'Gestion des utilisateurs', 'admin-sources':'Sources RSS',
+  'admin-stats':'Statistiques système', 'admin-audit':'Journal d\'audit'
+};
 function go(page, navEl){
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
   document.querySelectorAll('.nv').forEach(function(n){ n.classList.remove('on'); });
-  document.getElementById('page-'+page).classList.add('on');
+  var pg = document.getElementById('page-'+page);
+  if(pg) pg.classList.add('on');
   if(navEl) navEl.classList.add('on');
-  document.getElementById('page-title').innerText = TITLES[page] || '';
-  if(page === 'map') setTimeout(initMap, 150);
+  document.getElementById('page-title').innerText = PAGE_TITLES[page] || '';
+  closeSidebar();
+  if(page === 'map') setTimeout(initMap, 200);
   if(page === 'admin-stats' && !window.sysChartReady){ initSysChart(); window.sysChartReady = true; }
+  updateStatPage();
 }
 
 // ===== TOAST =====
 function toast(msg, type){
   var el = document.createElement('div');
   el.className = 'toast';
-  if(type === 'success') el.style.borderLeftColor = 'var(--green)';
-  if(type === 'error') el.style.borderLeftColor = 'var(--red)';
-  if(type === 'warning') el.style.borderLeftColor = 'var(--amber)';
+  var c = {success:'var(--green)', error:'var(--red)', warning:'var(--amber)'};
+  if(c[type]) el.style.borderLeftColor = c[type];
   el.innerText = msg;
-  document.getElementById('twrap').appendChild(el);
-  setTimeout(function(){ el.style.opacity='0'; }, 2700);
-  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 3000);
+  var wrap = document.getElementById('twrap');
+  wrap.appendChild(el);
+  setTimeout(function(){ el.style.opacity = '0'; el.style.transform = 'translateX(100%)'; el.style.transition = '.3s'; }, 2800);
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 3100);
 }
 
-// ===== DONNÉES =====
-var FEED = [
-  {id:1,title:"Le Maroc consolide sa position de leader régional en matière de diplomatie et de coopération",source:"MAP",lang:"FR",country:"Maroc",cat:"Politique",imp:"HAUTE",sent:"Positif",time:"il y a 10 min",summary:"Sa Majesté le Roi Mohammed VI a présidé une session de travail consacrée aux axes stratégiques de la politique étrangère du Royaume. Le Maroc réaffirme son rôle pivot entre l'Afrique, le monde arabe et l'Europe, tout en renforçant ses partenariats bilatéraux avec des puissances clés."},
-  {id:2,title:"تطورات جديدة في مجلس الأمن حول قضية الصحراء المغربية",source:"Al Jazeera",lang:"AR",country:"Qatar",cat:"Diplomatie",imp:"CRITIQUE",sent:"Neutre",time:"il y a 25 min",summary:"عقد مجلس الأمن الدولي جلسة طارئة لمناقشة آخر التطورات المتعلقة بقضية الصحراء. وأكد الممثلون الدوليون أهمية الحوار والحلول السلمية."},
-  {id:3,title:"Coopération France-Maghreb : un nouveau chapitre sécuritaire",source:"Le Monde",lang:"FR",country:"France",cat:"Sécurité",imp:"HAUTE",sent:"Positif",time:"il y a 52 min",summary:"Paris et Rabat ont signé un accord renforcé de coopération sécuritaire portant sur la lutte contre le terrorisme transfrontalier, le trafic de drogue et les flux migratoires irréguliers."},
-  {id:4,title:"US-Morocco Economic Forum: record FDI flows in 2026",source:"Reuters",lang:"EN",country:"USA",cat:"Économie",imp:"NORMALE",sent:"Positif",time:"il y a 1h 30",summary:"The US-Morocco Economic Forum concluded with the announcement of $2.3 billion in new foreign direct investment commitments. Key sectors include renewable energy, technology infrastructure, and agricultural modernization."},
-  {id:5,title:"الوضع الأمني في منطقة الساحل يتصاعد — تحليل معمق",source:"BBC Arabic",lang:"AR",country:"Royaume-Uni",cat:"Sécurité",imp:"CRITIQUE",sent:"Négatif",time:"il y a 2h 15",summary:"تشهد منطقة الساحل تصاعداً ملحوظاً في النشاط الإرهابي، وسط تقارير عن تمدد جماعات مسلحة نحو الحدود الشمالية."},
-  {id:6,title:"Sommet UE-UA : l'Afrique au cœur des priorités européennes",source:"Euronews",lang:"FR",country:"Belgique",cat:"Diplomatie",imp:"NORMALE",sent:"Neutre",time:"il y a 3h",summary:"Le sommet Union Européenne — Union Africaine a réuni plus de 80 chefs d'État. Un plan d'action conjoint de 150 milliards d'euros sur cinq ans a été adopté."},
-  {id:7,title:"Spain-Morocco summit: joint border management agreement signed",source:"El País",lang:"EN",country:"Espagne",cat:"Diplomatie",imp:"HAUTE",sent:"Positif",time:"il y a 4h 45",summary:"The agreement includes a EUR 500 million investment plan for development programs in northern Morocco, aimed at addressing root causes of migration."},
-  {id:8,title:"المغرب يحقق رقماً قياسياً في الاستثمارات الأجنبية المباشرة",source:"La Vie Éco",lang:"AR",country:"Maroc",cat:"Économie",imp:"NORMALE",sent:"Positif",time:"il y a 6h",summary:"كشفت البيانات الرسمية أن المغرب استقطب استثمارات أجنبية مباشرة بقيمة 4.2 مليار دولار خلال النصف الأول من عام 2026، وهو رقم قياسي تاريخي."}
+// ===== RSS DATA =====
+var ALL_ARTICLES = [];
+var RSS_SOURCES = [
+  {name:'BBC Arabic', url:'https://feeds.bbci.co.uk/arabic/rss.xml', lang:'AR', country:'Royaume-Uni', rel:0.95, cat:'International', color:'var(--red)'},
+  {name:'Le Monde', url:'https://www.lemonde.fr/rss/une.xml', lang:'FR', country:'France', rel:0.97, cat:'International', color:'var(--cyan)'},
+  {name:'France 24 FR', url:'https://www.france24.com/fr/rss', lang:'FR', country:'France', rel:0.94, cat:'International', color:'var(--purple)'},
+  {name:'Al Jazeera EN', url:'https://www.aljazeera.com/xml/rss/all.xml', lang:'EN', country:'Qatar', rel:0.91, cat:'International', color:'var(--amber)'},
+  {name:'Hespress', url:'https://www.hespress.com/feed', lang:'AR', country:'Maroc', rel:0.85, cat:'Maroc', color:'var(--green)'},
 ];
-var SOCIAL = [
-  {id:1,platform:"Twitter/X",handle:"@MAP_Maroc",name:"MAP Maroc",text:"#Maroc : Sa Majesté le Roi adresse un discours au Parlement.",time:"il y a 8 min",likes:1240,rts:380,lang:"AR"},
-  {id:2,platform:"LinkedIn",handle:"UN_Morocco",name:"United Nations Morocco",text:"UN Security Council holds emergency session on Western Sahara.",time:"il y a 42 min",likes:560,rts:120,lang:"EN"},
-  {id:3,platform:"Facebook",handle:"LeMonde.Afrique",name:"Le Monde Afrique",text:"La coopération sécuritaire entre la France et le Maghreb se renforce.",time:"il y a 1h",likes:892,rts:234,lang:"FR"},
-  {id:4,platform:"YouTube",handle:"AlJazeera_AR",name:"الجزيرة",text:"مجلس الأمن يناقش الوضع الأمني في منطقة الساحل",time:"il y a 2h",likes:3200,rts:890,lang:"AR"},
-  {id:5,platform:"Instagram",handle:"elconfidencial",name:"El Confidencial",text:"España y Marruecos refuerzan su cooperación migratoria.",time:"il y a 3h",likes:445,rts:89,lang:"ES"},
-  {id:6,platform:"TikTok",handle:"leseco_ma",name:"Les Économistes",text:"Les IDE au Maroc atteignent 4,2 milliards $ — record historique.",time:"il y a 4h",likes:12400,rts:2100,lang:"FR"}
-];
-var VIDEOS = [
-  {id:1,title:"خطاب جلالة الملك محمد السادس أمام البرلمان 2026",channel:"MAP TV",dur:"18:42",views:"124K",time:"il y a 2h",lang:"AR",thumb:"https://via.placeholder.com/320x180/0D1526/00D4FF?text=MAP+TV"},
-  {id:2,title:"UN Security Council — Western Sahara Session",channel:"UN WebTV",dur:"1:24:15",views:"89K",time:"il y a 4h",lang:"EN",thumb:"https://via.placeholder.com/320x180/0D1526/A78BFA?text=UN+WebTV"},
-  {id:3,title:"Coopération France-Maghreb : analyse géopolitique",channel:"France 24",dur:"12:30",views:"45K",time:"il y a 6h",lang:"FR",thumb:"https://via.placeholder.com/320x180/0D1526/00FF88?text=France+24"},
-  {id:4,title:"Sahel : crise sécuritaire — reportage terrain",channel:"Al Jazeera",dur:"28:14",views:"230K",time:"il y a 8h",lang:"AR",thumb:"https://via.placeholder.com/320x180/0D1526/FF3366?text=Al+Jazeera"},
-  {id:5,title:"Marruecos IDE récord 2026 — análisis económico",channel:"El País TV",dur:"9:55",views:"18K",time:"il y a 12h",lang:"ES",thumb:"https://via.placeholder.com/320x180/0D1526/FFB800?text=El+Pais"}
-];
-var ALERTS = [
-  {id:1,pri:"CRITIQUE",title:"Incident sécuritaire — Zone frontalière Sud",date:"2026-09-16 08:15",read:false,desc:"Des mouvements suspects ont été détectés à proximité de la zone frontalière. Activité anormale corrélée à des publications sur les réseaux sociaux.",art:1},
-  {id:2,pri:"CRITIQUE",title:"Hashtag viral anti-Maroc — X/Twitter",date:"2026-09-16 07:32",read:false,desc:"Un hashtag hostile est devenu viral avec plus de 45 000 mentions en 3h. Analyse : 78% négatif. Origine : bots coordonnés.",art:4},
-  {id:3,pri:"HAUTE",title:"Réunion ONU urgente — Conseil de Sécurité",date:"2026-09-15 23:00",read:true,desc:"Convocation d'une session extraordinaire du Conseil de Sécurité. Délégation marocaine en route.",art:2},
-  {id:4,pri:"HAUTE",title:"Source AFP hors ligne — Interruption collecte",date:"2026-09-15 20:45",read:true,desc:"La source AFP n'est plus accessible depuis 20h45. 0 article collecté depuis 3h.",art:null},
-  {id:5,pri:"NORMALE",title:"Pic de volume — Articles économie Maroc",date:"2026-09-15 16:00",read:true,desc:"Volume d'articles économie +210% vs moyenne 7 jours. Corrélé avec l'annonce du record IDE.",art:8}
-];
-var SOURCES = [
-  {name:"Agence MAP",type:"API",lang:"FR/AR",country:"Maroc",rel:"0.97",freq:"Temps réel",count:428,status:"Active"},
-  {name:"Al Jazeera Arabic",type:"RSS",lang:"AR",country:"Qatar",rel:"0.94",freq:"5 min",count:312,status:"Active"},
-  {name:"Le Monde",type:"RSS",lang:"FR",country:"France",rel:"0.96",freq:"15 min",count:287,status:"Active"},
-  {name:"Reuters (EN)",type:"API",lang:"EN",country:"USA",rel:"0.98",freq:"Temps réel",count:651,status:"Active"},
-  {name:"BBC Arabic",type:"RSS",lang:"AR",country:"Royaume-Uni",rel:"0.93",freq:"10 min",count:198,status:"Active"},
-  {name:"Euronews FR",type:"Scraping",lang:"FR",country:"Belgique",rel:"0.89",freq:"30 min",count:143,status:"Active"},
-  {name:"El País",type:"RSS",lang:"ES",country:"Espagne",rel:"0.91",freq:"20 min",count:112,status:"Active"},
-  {name:"Médias24",type:"Scraping",lang:"FR",country:"Maroc",rel:"0.88",freq:"15 min",count:234,status:"Active"},
-  {name:"Hespress",type:"Scraping",lang:"AR/FR",country:"Maroc",rel:"0.85",freq:"10 min",count:456,status:"Active"},
-  {name:"AFP Wire",type:"API",lang:"FR",country:"France",rel:"0.99",freq:"Temps réel",count:0,status:"Error"},
-  {name:"Sky News Arabia",type:"RSS",lang:"AR",country:"Émirats",rel:"0.90",freq:"10 min",count:178,status:"Active"},
-  {name:"France 24",type:"RSS",lang:"FR/AR/EN",country:"France",rel:"0.95",freq:"10 min",count:321,status:"Active"},
-  {name:"Deutsche Welle AR",type:"RSS",lang:"AR",country:"Allemagne",rel:"0.92",freq:"30 min",count:87,status:"Active"},
-  {name:"La Vie Économique",type:"Scraping",lang:"FR",country:"Maroc",rel:"0.84",freq:"1h",count:65,status:"Active"},
-  {name:"Anadolu Agency",type:"API",lang:"AR/FR/EN",country:"Turquie",rel:"0.87",freq:"15 min",count:245,status:"Active"},
-  {name:"Washington Post",type:"RSS",lang:"EN",country:"USA",rel:"0.95",freq:"30 min",count:134,status:"Active"},
-  {name:"Al Arabiya",type:"Scraping",lang:"AR",country:"Arabie S.",rel:"0.86",freq:"20 min",count:198,status:"Active"},
-  {name:"Jeune Afrique",type:"RSS",lang:"FR",country:"France",rel:"0.91",freq:"1h",count:89,status:"Active"},
-  {name:"ONU Actualités",type:"RSS",lang:"FR/EN/AR",country:"USA",rel:"0.99",freq:"1h",count:34,status:"Active"},
-  {name:"TelQuel Maroc",type:"Scraping",lang:"FR",country:"Maroc",rel:"0.83",freq:"2h",count:12,status:"Inactive"}
-];
-var FAVS = [];
+var RSS_COUNTS = {};
+var rssLoaded = false;
 
-// ===== FLUX =====
-function articleHTML(a){
+function detectCategory(title, desc){
+  var t = (title + ' ' + desc).toLowerCase();
+  if(/sahara|maroc|morocco|maghreb|rabat|casablanca|algérie|tunisie|fès|meknès/i.test(t)) return 'Géopolitique Maroc';
+  if(/sécurité|terroris|militaire|attaque|conflit|guerre|armée|sahel|isis|daech/i.test(t)) return 'Sécurité';
+  if(/diplom|accord|traité|sommet|onu|conseil de sécurité|ambassadeur|ministre des affaires/i.test(t)) return 'Diplomatie';
+  if(/économ|croissance|pib|budget|investissement|bourse|inflation|emploi|chômage/i.test(t)) return 'Économie';
+  if(/élection|gouvernement|parlement|président|premier ministre|parti|vote/i.test(t)) return 'Politique';
+  if(/sport|football|coupe du monde|olympique|atlético|ligue/i.test(t)) return 'Sport';
+  if(/technolog|intelligence artificielle|ia|numérique|cyber|data/i.test(t)) return 'Technologie';
+  return 'International';
+}
+function detectImportance(title){
+  var t = title.toLowerCase();
+  if(/urgent|breaking|alerte|attaque|guerre|crise|urgence|mort|décès/i.test(t)) return 'CRITIQUE';
+  if(/important|exclusif|accord|traité|sommet|visite officielle/i.test(t)) return 'HAUTE';
+  return 'NORMALE';
+}
+function detectLang(source, title){
+  var arPattern = /[\u0600-\u06FF]/;
+  if(arPattern.test(title)) return 'AR';
+  if(source === 'Hespress' || source === 'BBC Arabic') return 'AR';
+  if(source === 'Al Jazeera EN') return 'EN';
+  if(source === 'France 24 FR' || source === 'Le Monde') return 'FR';
+  return 'FR';
+}
+function formatDate(dateStr){
+  if(!dateStr) return 'Date inconnue';
+  try{
+    var d = new Date(dateStr);
+    var now = new Date();
+    var diff = Math.floor((now - d)/1000);
+    if(diff < 60) return 'il y a ' + diff + 's';
+    if(diff < 3600) return 'il y a ' + Math.floor(diff/60) + ' min';
+    if(diff < 86400) return 'il y a ' + Math.floor(diff/3600) + 'h';
+    return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'short'});
+  }catch(e){ return dateStr; }
+}
+function cleanText(t){
+  if(!t) return '';
+  return t.replace(/<[^>]*>/g, '').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g,' ').trim().slice(0, 200);
+}
+
+async function fetchOneRSS(source){
+  var proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(source.url) + '&t=' + Date.now();
+  try{
+    var resp = await fetch(proxy, {signal: AbortSignal.timeout(10000)});
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    if(!data.contents) throw new Error('No contents');
+    var parser = new DOMParser();
+    var xml = parser.parseFromString(data.contents, 'text/xml');
+    var items = Array.from(xml.querySelectorAll('item'));
+    var articles = items.slice(0, 15).map(function(item, idx){
+      var title = cleanText(item.querySelector('title') ? item.querySelector('title').textContent : '');
+      var link = (item.querySelector('link') ? item.querySelector('link').textContent : '') || (item.querySelector('guid') ? item.querySelector('guid').textContent : '#');
+      var desc = cleanText(item.querySelector('description') ? item.querySelector('description').textContent : '');
+      var pubDate = item.querySelector('pubDate') ? item.querySelector('pubDate').textContent : '';
+      var lang = detectLang(source.name, title);
+      return {
+        id: source.name + '-' + idx,
+        title: title || '(Titre indisponible)',
+        link: link,
+        summary: desc || 'Contenu disponible sur le site source.',
+        source: source.name,
+        sourceLang: lang,
+        lang: lang,
+        country: source.country,
+        cat: detectCategory(title, desc),
+        imp: detectImportance(title),
+        sent: 'Neutre',
+        time: formatDate(pubDate),
+        pubDate: pubDate ? new Date(pubDate) : new Date(),
+        color: source.color
+      };
+    }).filter(function(a){ return a.title && a.title !== '(Titre indisponible)'; });
+    RSS_COUNTS[source.name] = articles.length;
+    return articles;
+  }catch(e){
+    RSS_COUNTS[source.name] = 0;
+    console.warn('RSS failed:', source.name, e.message);
+    return [];
+  }
+}
+
+async function loadRSS(force){
+  if(rssLoaded && !force) return;
+  document.getElementById('feed-list').innerHTML = '<div class="loading"><div class="spinner"></div>Connexion aux sources RSS en cours...</div>';
+  document.getElementById('feed-status').innerHTML = '<span class="live-dot"></span> Connexion aux sources RSS...';
+  document.getElementById('live-indicator').style.display = 'flex';
+  var allResults = await Promise.allSettled(RSS_SOURCES.map(fetchOneRSS));
+  var all = [];
+  allResults.forEach(function(r){ if(r.status === 'fulfilled') all = all.concat(r.value); });
+  all.sort(function(a,b){ return (b.pubDate||0) - (a.pubDate||0); });
+  ALL_ARTICLES = all;
+  rssLoaded = true;
+  var activeCount = RSS_SOURCES.filter(function(s){ return (RSS_COUNTS[s.name]||0) > 0; }).length;
+  document.getElementById('feed-status').innerHTML = '<span class="live-dot"></span> ' + ALL_ARTICLES.length + ' articles chargés depuis ' + activeCount + '/' + RSS_SOURCES.length + ' sources — ' + new Date().toLocaleTimeString('fr-FR');
+  document.getElementById('k-articles').innerText = ALL_ARTICLES.length;
+  document.getElementById('k-sources').innerText = activeCount;
+  document.getElementById('k-sources-count').innerText = activeCount + ' source' + (activeCount>1?'s':'') + ' RSS active' + (activeCount>1?'s':'');
+  document.getElementById('k-sources-status').innerText = activeCount + '/' + RSS_SOURCES.length + ' en ligne';
+  document.getElementById('dash-updated').innerText = 'Mis à jour : ' + new Date().toLocaleTimeString('fr-FR');
+  document.getElementById('vol-updated').innerText = '· Actualisé à ' + new Date().toLocaleTimeString('fr-FR');
+  renderFeed(ALL_ARTICLES);
+  updateCharts();
+  renderDashboard();
+  renderSources();
+  updateStatPage();
+  filterFeed('all', document.querySelector('#feed-fbar .fbtn.on') || document.querySelector('#feed-fbar .fbtn'));
+}
+
+// ===== RENDER FEED =====
+var CURRENT_FILTER = 'all';
+function langClass(l){ var m = {FR:'fr',AR:'ar',EN:'en',ES:'es',PT:'pt'}; return 'bd-'+(m[l]||'en'); }
+function impClass(i){ return i==='CRITIQUE'?'imp-c':i==='HAUTE'?'imp-h':'imp-n'; }
+function artHTML(a){
   var rtl = a.lang === 'AR' ? 'direction:rtl;text-align:right;font-family:Noto Sans Arabic,sans-serif;' : '';
-  var impCls = a.imp === 'CRITIQUE' ? 'imp-critique' : a.imp === 'HAUTE' ? 'imp-haute' : 'imp';
+  var linkBtn = a.link && a.link !== '#' ?
+    '<a href="'+a.link+'" target="_blank" rel="noopener" class="gbtn">🔗 Article original</a>' : '';
   return '<div class="acard">' +
-    '<div style="display:flex;gap:6px;margin-bottom:10px;align-items:center;flex-wrap:wrap">' +
-      '<span class="bd bd-'+a.lang.toLowerCase()+'">'+a.lang+'</span>' +
+    '<div class="acard-meta">' +
+      '<span class="bd '+langClass(a.lang)+'">'+a.lang+'</span>' +
       '<span class="tag">'+a.cat+'</span>' +
-      '<span class="'+impCls+'">'+a.imp+'</span>' +
-      '<span style="margin-left:auto;font-size:12px;color:var(--ts)">'+a.time+'</span>' +
+      '<span class="'+impClass(a.imp)+'">'+a.imp+'</span>' +
+      '<span style="margin-left:auto;font-size:11px;color:var(--ts)">'+a.time+'</span>' +
     '</div>' +
-    '<h3 style="font-size:15px;font-weight:600;margin-bottom:10px;line-height:1.5;'+rtl+'">'+a.title+'</h3>' +
-    '<div style="font-size:12px;color:var(--tm);margin-bottom:12px">📰 '+a.source+' · 🌍 '+a.country+'</div>' +
-    '<div style="display:flex;gap:8px">' +
-      '<button class="gbtn" onclick="openArt('+a.id+')">Ouvrir l\'article</button>' +
-      '<button class="gbtn" onclick="addFav('+a.id+')" title="Ajouter aux favoris">⭐</button>' +
-    '</div></div>';
+    '<div class="acard-title" style="'+rtl+'">' +
+      (a.link&&a.link!=='#' ? '<a href="'+a.link+'" target="_blank" rel="noopener" style="color:var(--tp);text-decoration:none">'+a.title+'</a>' : a.title) +
+    '</div>' +
+    '<div class="acard-src">📰 '+a.source+' · 🌍 '+a.country+'</div>' +
+    '<div class="acard-footer">' +
+      '<button class="gbtn" onclick="openArt(\''+encodeId(a.id)+'\')">Résumé</button>' +
+      linkBtn +
+      '<button class="gbtn" onclick="addFav(\''+encodeId(a.id)+'\')" title="Ajouter aux favoris">⭐</button>' +
+    '</div>' +
+  '</div>';
 }
+function encodeId(id){ return String(id).replace(/'/g,"\\'"); }
 function renderFeed(data){
-  document.getElementById('feed-list').innerHTML = data.map(articleHTML).join('') || '<div class="card" style="color:var(--tm);text-align:center;padding:30px">Aucun article pour ce filtre.</div>';
+  var list = document.getElementById('feed-list');
+  if(!data || !data.length){
+    list.innerHTML = '<div class="empty"><div class="empty-ico">📭</div><h3>Aucun article pour ce filtre</h3><p>Essayez un autre filtre ou actualisez les sources.</p></div>';
+    return;
+  }
+  list.innerHTML = data.slice(0, 50).map(artHTML).join('');
 }
 function filterFeed(f, btn){
+  CURRENT_FILTER = f;
   document.querySelectorAll('#feed-fbar .fbtn').forEach(function(b){ b.classList.remove('on'); });
-  btn.classList.add('on');
-  renderFeed(f === 'all' ? FEED : FEED.filter(function(a){ return a.cat === f || a.lang === f; }));
+  if(btn) btn.classList.add('on');
+  var data;
+  if(f === 'all') data = ALL_ARTICLES;
+  else if(['FR','AR','EN','ES'].indexOf(f) >= 0) data = ALL_ARTICLES.filter(function(a){ return a.lang === f; });
+  else data = ALL_ARTICLES.filter(function(a){ return a.cat === f || a.cat.indexOf(f) >= 0; });
+  renderFeed(data);
 }
 
 // ===== ARTICLE MODAL =====
 function openArt(id){
-  var a = FEED.filter(function(x){ return x.id === id; })[0];
+  var a = ALL_ARTICLES.filter(function(x){ return String(x.id) === String(id); })[0];
   if(!a) return;
   var rtl = a.lang === 'AR' ? 'direction:rtl;text-align:right;font-family:Noto Sans Arabic,sans-serif;' : '';
-  var impCls = a.imp === 'CRITIQUE' ? 'imp-critique' : a.imp === 'HAUTE' ? 'imp-haute' : 'imp';
+  var linkBtn = a.link && a.link !== '#' ?
+    '<a href="'+a.link+'" target="_blank" rel="noopener" class="gbtn">🔗 Lire l\'article complet</a>' : '';
   document.getElementById('art-body').innerHTML =
-    '<div style="padding:24px">' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
-        '<span class="bd bd-'+a.lang.toLowerCase()+'">'+a.lang+'</span>' +
+    '<div class="mpad">' +
+      '<div class="mhdr">' +
+        '<span class="bd '+langClass(a.lang)+'">'+a.lang+'</span>' +
         '<span class="tag">'+a.cat+'</span>' +
-        '<span class="'+impCls+'">'+a.imp+'</span>' +
+        '<span class="'+impClass(a.imp)+'">'+a.imp+'</span>' +
       '</div>' +
-      '<h2 style="font-size:17px;font-weight:700;margin-bottom:12px;line-height:1.4;'+rtl+'">'+a.title+'</h2>' +
-      '<div style="font-size:12px;color:var(--tm);margin-bottom:14px;display:flex;gap:12px;flex-wrap:wrap">'+
+      '<div class="mtitle" style="'+rtl+'">'+a.title+'</div>' +
+      '<div style="font-size:12px;color:var(--tm);margin-bottom:14px;display:flex;gap:12px;flex-wrap:wrap">' +
         '<span>📰 '+a.source+'</span><span>🌍 '+a.country+'</span><span>🕐 '+a.time+'</span>' +
       '</div>' +
-      '<div style="background:var(--s3);border-radius:8px;padding:16px;border-left:3px solid var(--cyan);margin-bottom:14px">' +
-        '<div style="font-size:11px;color:var(--cyan);margin-bottom:8px;font-weight:700">SYNTHÈSE IA</div>' +
-        '<p style="font-size:14px;line-height:1.7;'+rtl+'">'+a.summary+'</p>' +
+      '<div class="msynth">' +
+        '<div class="msynth-label">EXTRAIT / RÉSUMÉ</div>' +
+        '<p style="'+rtl+'">'+a.summary+'</p>' +
       '</div>' +
-      '<div style="background:var(--s3);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--tm);margin-bottom:14px">' +
-        '⚠️ Contenu complet non disponible en mode démonstration.' +
-      '</div>' +
-      '<div style="display:flex;gap:10px">' +
-        '<button class="gbtn" onclick="addFav('+id+');closeArt()">⭐ Favoris</button>' +
-        '<button class="gbtn" onclick="toast(\'Source non disponible en démonstration\',\'warning\')">🔗 Source originale</button>' +
+      '<div class="mfooter">' +
+        '<button class="gbtn" onclick="addFav(\''+encodeId(a.id)+'\');closeArt()">⭐ Ajouter aux favoris</button>' +
+        linkBtn +
       '</div>' +
     '</div>';
   document.getElementById('art-modal').classList.add('on');
@@ -551,105 +1024,188 @@ function openArt(id){
 function closeArt(){ document.getElementById('art-modal').classList.remove('on'); }
 
 // ===== FAVORIS =====
+var FAVS = {};
+function loadFavorites(){
+  try{
+    var saved = localStorage.getItem('vigia-favs');
+    FAVS = saved ? JSON.parse(saved) : {};
+  }catch(e){ FAVS = {}; }
+  renderFavs();
+}
+function saveFavorites(){ localStorage.setItem('vigia-favs', JSON.stringify(FAVS)); }
 function addFav(id){
-  if(FAVS.filter(function(x){ return x.id === id; }).length){ toast('Déjà dans les favoris','warning'); return; }
-  var a = FEED.filter(function(x){ return x.id === id; })[0];
-  if(a){ FAVS.push(a); renderFavs(); toast('Ajouté aux favoris ⭐','success'); }
+  var a = ALL_ARTICLES.filter(function(x){ return String(x.id) === String(id); })[0];
+  if(!a){ toast('Article introuvable','error'); return; }
+  if(FAVS[id]){ toast('Déjà dans les favoris','warning'); return; }
+  FAVS[id] = a;
+  saveFavorites();
+  renderFavs();
+  toast('Ajouté aux favoris ⭐','success');
+}
+function removeFav(id){
+  delete FAVS[id];
+  saveFavorites();
+  renderFavs();
+  toast('Supprimé des favoris');
+}
+function clearFavs(){
+  if(!confirm('Effacer tous les favoris ?')) return;
+  FAVS = {};
+  saveFavorites();
+  renderFavs();
+  toast('Favoris effacés');
 }
 function renderFavs(){
-  document.getElementById('fav-count').innerText = '(' + FAVS.length + ' élément' + (FAVS.length !== 1 ? 's' : '') + ')';
-  if(!FAVS.length){
-    document.getElementById('fav-list').innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--tm)"><div style="font-size:40px;margin-bottom:12px">⭐</div><div>Aucun favori. Ouvrez un article et ajoutez-le.</div></div>';
+  var list = Object.values(FAVS);
+  var count = list.length;
+  document.getElementById('fav-count').innerText = count ? '('+count+' article'+(count>1?'s':'')+')' : '';
+  var badge = document.getElementById('fav-badge');
+  badge.innerText = count; badge.style.display = count ? '' : 'none';
+  var clearBtn = document.getElementById('fav-clear');
+  if(clearBtn) clearBtn.style.display = count ? '' : 'none';
+  if(!count){
+    document.getElementById('fav-list').innerHTML = '<div class="empty"><div class="empty-ico">⭐</div><h3>Aucun favori</h3><p>Ouvrez un article et cliquez sur ⭐ pour l\'ajouter ici.<br>Vos favoris sont sauvegardés localement.</p></div>';
   } else {
-    document.getElementById('fav-list').innerHTML = FAVS.map(function(a){
-      var rtl = a.lang === 'AR' ? 'direction:rtl;text-align:right;font-family:Noto Sans Arabic,sans-serif;' : '';
-      return '<div class="acard"><h3 style="'+rtl+'">'+a.title+'</h3><div style="font-size:12px;color:var(--tm);margin-top:8px">📰 '+a.source+' · '+a.time+'</div><button class="gbtn" style="margin-top:10px" onclick="openArt('+a.id+')">Ouvrir</button></div>';
+    document.getElementById('fav-list').innerHTML = list.map(function(a){
+      var rtl = a.lang==='AR'?'direction:rtl;text-align:right;font-family:Noto Sans Arabic,sans-serif;':'';
+      return '<div class="acard">' +
+        '<div class="acard-meta"><span class="bd '+langClass(a.lang)+'">'+a.lang+'</span><span class="tag">'+a.cat+'</span><span style="margin-left:auto;font-size:11px;color:var(--ts)">'+a.time+'</span></div>' +
+        '<div class="acard-title" style="'+rtl+'">'+a.title+'</div>' +
+        '<div class="acard-src">📰 '+a.source+'</div>' +
+        '<div class="acard-footer">' +
+          '<button class="gbtn" onclick="openArt(\''+encodeId(a.id)+'\')">Résumé</button>' +
+          (a.link&&a.link!=='#'?'<a href="'+a.link+'" target="_blank" rel="noopener" class="gbtn">🔗 Source</a>':'') +
+          '<button class="gbtn" onclick="removeFav(\''+encodeId(a.id)+'\')" style="color:var(--red)">✕ Retirer</button>' +
+        '</div>' +
+      '</div>';
     }).join('');
   }
 }
 
-// ===== SOCIAL =====
-var PLATCLS = {'Twitter/X':'plat-tw','Facebook':'plat-fb','LinkedIn':'plat-li','Instagram':'plat-ig','YouTube':'plat-yt','TikTok':'plat-tt'};
-function renderSocial(data){
-  document.getElementById('social-list').innerHTML = data.map(function(s){
-    var rtl = s.lang === 'AR' ? 'direction:rtl;text-align:right;font-family:Noto Sans Arabic,sans-serif;' : '';
-    return '<div class="card">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">' +
-        '<span class="plat '+(PLATCLS[s.platform]||'')+'">'+s.platform+'</span>' +
-        '<span style="font-size:12px;color:var(--ts)">'+s.time+'</span>' +
-      '</div>' +
-      '<div style="font-weight:600;margin-bottom:6px">'+s.name+' <span style="font-weight:400;color:var(--tm);font-size:12px">'+s.handle+'</span></div>' +
-      '<p style="font-size:13px;line-height:1.6;margin-bottom:10px;'+rtl+'">'+s.text+'</p>' +
-      '<div style="font-size:12px;color:var(--tm)">❤️ '+s.likes.toLocaleString()+' &nbsp; 🔄 '+s.rts.toLocaleString()+'</div>' +
-    '</div>';
-  }).join('');
-}
-function filterSocial(f, btn){
-  document.querySelectorAll('#social-fbar .fbtn').forEach(function(b){ b.classList.remove('on'); });
-  btn.classList.add('on');
-  renderSocial(f === 'all' ? SOCIAL : SOCIAL.filter(function(s){ return s.platform === f; }));
+// ===== RECHERCHE =====
+function doSearch(){
+  var q = (document.getElementById('s-inp').value || '').trim().toLowerCase();
+  var src = document.getElementById('s-src').value;
+  var meta = document.getElementById('s-meta');
+  var res = document.getElementById('s-results');
+  if(!q){
+    res.innerHTML = '<div class="empty"><div class="empty-ico">🔍</div><h3>Lancez une recherche</h3><p>Saisissez un terme pour rechercher dans les articles chargés.</p></div>';
+    meta.innerText = ''; return;
+  }
+  var results = [];
+  if((src==='all'||src==='article') && ALL_ARTICLES.length){
+    ALL_ARTICLES.filter(function(a){
+      return a.title.toLowerCase().indexOf(q)>=0 || a.summary.toLowerCase().indexOf(q)>=0 || a.source.toLowerCase().indexOf(q)>=0 || a.cat.toLowerCase().indexOf(q)>=0;
+    }).forEach(function(a){ results.push({type:'article',data:a}); });
+  }
+  meta.innerText = results.length ? results.length+' résultat(s) pour "'+document.getElementById('s-inp').value+'"' : '';
+  if(!results.length){
+    res.innerHTML = '<div class="empty"><div class="empty-ico">😔</div><h3>Aucun résultat</h3><p>Aucun article ne correspond à "'+document.getElementById('s-inp').value+'".<br>Essayez un autre terme ou actualisez le flux.</p></div>';
+    return;
+  }
+  res.innerHTML = results.slice(0,30).map(function(r){ return artHTML(r.data); }).join('');
 }
 
-// ===== VIDÉOS =====
-function renderVideos(){
-  document.getElementById('video-list').innerHTML = VIDEOS.map(function(v){
-    var rtl = v.lang === 'AR' ? 'direction:rtl;text-align:right;font-family:Noto Sans Arabic,sans-serif;' : '';
-    return '<div class="card" style="padding:0;overflow:hidden;cursor:pointer" onclick="toast(\'Vidéo non disponible en démonstration\',\'warning\')">' +
-      '<div style="position:relative"><img src="'+v.thumb+'" style="width:100%;height:150px;object-fit:cover;display:block">' +
-        '<span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.85);color:#fff;padding:3px 7px;border-radius:4px;font-size:12px">'+v.dur+'</span>' +
-      '</div>' +
-      '<div style="padding:14px">' +
-        '<h4 style="font-size:13px;margin-bottom:6px;line-height:1.4;'+rtl+'">'+v.title+'</h4>' +
-        '<div style="font-size:12px;color:var(--tm)">'+v.channel+' · '+v.views+' vues · '+v.time+'</div>' +
-      '</div></div>';
-  }).join('');
+// ===== CARTE =====
+var mapInst = null;
+function initMap(){
+  if(mapInst){ try{ mapInst.invalidateSize(); }catch(e){} return; }
+  var el = document.getElementById('map-leaflet');
+  if(!el) return;
+  mapInst = L.map('map-leaflet').setView([25,15],3);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom:18
+  }).addTo(mapInst);
+  var pts = [
+    {lat:31.79,lng:-7.09,name:'Maroc',count:1240,c:'#FF3366',imp:'CRITIQUE'},
+    {lat:46.23,lng:2.21,name:'France',count:820,c:'#00D4FF',imp:'HAUTE'},
+    {lat:28.03,lng:1.66,name:'Algérie',count:610,c:'#A78BFA',imp:'HAUTE'},
+    {lat:37.09,lng:-95.71,name:'USA',count:580,c:'#00D4FF',imp:'HAUTE'},
+    {lat:33.89,lng:9.54,name:'Tunisie',count:320,c:'#00FF88',imp:'NORMALE'},
+    {lat:40.46,lng:-3.75,name:'Espagne',count:290,c:'#FFB800',imp:'NORMALE'},
+    {lat:38.96,lng:35.24,name:'Turquie',count:180,c:'#00D4FF',imp:'NORMALE'},
+    {lat:25.35,lng:51.18,name:'Qatar',count:150,c:'#FFB800',imp:'NORMALE'},
+    {lat:24.47,lng:54.37,name:'Émirats',count:120,c:'#A78BFA',imp:'NORMALE'},
+    {lat:-1.29,lng:36.82,name:'Kenya',count:95,c:'#00FF88',imp:'NORMALE'},
+    {lat:9.05,lng:7.49,name:'Nigeria',count:85,c:'#00FF88',imp:'NORMALE'},
+    {lat:30.03,lng:31.23,name:'Égypte',count:280,c:'#FFB800',imp:'HAUTE'}
+  ];
+  var legend = document.getElementById('map-legend');
+  legend.innerHTML = '';
+  pts.forEach(function(m){
+    L.circleMarker([m.lat,m.lng],{
+      radius:Math.max(8,Math.min(24,m.count/50)),
+      fillColor:m.c,color:m.c,weight:2,opacity:.9,fillOpacity:.65
+    }).addTo(mapInst).bindPopup(
+      '<div style="font-family:Space Grotesk,sans-serif;min-width:160px;padding:4px">' +
+      '<strong style="font-size:14px">'+m.name+'</strong><br>' +
+      '<span style="color:#666;font-size:13px">'+m.count+' articles</span><br>' +
+      '<span style="background:'+m.c+';color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:4px;display:inline-block">'+m.imp+'</span>' +
+      '</div>'
+    );
+    legend.innerHTML += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:8px">' +
+      '<span style="width:10px;height:10px;border-radius:50%;background:'+m.c+';flex-shrink:0;display:inline-block"></span>' +
+      '<span style="font-size:13px;font-weight:500">'+m.name+'</span>' +
+      '<span style="margin-left:auto;font-weight:700;font-size:13px;color:'+m.c+'">'+m.count+'</span>' +
+    '</div>';
+  });
 }
 
 // ===== ALERTES =====
+var ALERTS = [
+  {id:1,pri:'CRITIQUE',title:'Incident sécuritaire — Zone frontalière Sud',date:'2026-09-16 08:15',read:false,desc:'Des mouvements suspects ont été détectés à proximité de la zone frontalière. Les unités de surveillance ont signalé une activité anormale corrélée à des publications sur les réseaux sociaux.'},
+  {id:2,pri:'CRITIQUE',title:'Pic de mentions négatives — Réseaux sociaux',date:'2026-09-16 07:32',read:false,desc:'Un hashtag a généré plus de 45 000 mentions en 3 heures. Analyse : 78% de sentiment négatif. Origine probable : comptes coordonnés.'},
+  {id:3,pri:'HAUTE',title:'Session urgente — Conseil de Sécurité ONU',date:'2026-09-15 23:00',read:true,desc:'Convocation d\'une session extraordinaire du Conseil de Sécurité de l\'ONU. Sujet : situation régionale. Délégations en route.'},
+  {id:4,pri:'HAUTE',title:'Source RSS hors ligne — Interruption de collecte',date:'2026-09-15 20:45',read:true,desc:'Une source RSS n\'est plus accessible depuis 20h45. Impact estimé : réduction temporaire de la couverture médiatique.'},
+  {id:5,pri:'NORMALE',title:'Pic de volume — Articles économie',date:'2026-09-15 16:00',read:true,desc:'Le volume d\'articles sur l\'économie régionale a augmenté de 210% par rapport à la moyenne des 7 derniers jours.'}
+];
 function renderAlerts(){
   var f = document.getElementById('alert-filter').value;
-  var data = f === 'all' ? ALERTS : ALERTS.filter(function(a){ return a.pri === f; });
+  var rf = document.getElementById('alert-read-filter').value;
+  var data = ALERTS.filter(function(a){
+    var matchPri = f==='all' || a.pri===f;
+    var matchRead = rf==='all' || (rf==='unread'&&!a.read) || (rf==='read'&&a.read);
+    return matchPri && matchRead;
+  });
   var unread = ALERTS.filter(function(a){ return !a.read; }).length;
   var badge = document.getElementById('alert-badge');
-  badge.innerText = unread || '';
-  badge.style.display = unread ? '' : 'none';
-  document.getElementById('alerts-tb').innerHTML = data.map(function(a){
-    var bg = a.pri === 'CRITIQUE' ? 'var(--red)' : a.pri === 'HAUTE' ? 'var(--amber)' : 'var(--s4)';
-    var tc = a.pri === 'NORMALE' ? 'var(--tp)' : '#fff';
-    return '<tr style="opacity:'+(a.read?'.7':'1')+'">' +
-      '<td><span style="background:'+bg+';color:'+tc+';padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700">'+a.pri+'</span></td>' +
-      '<td>'+(a.read?'':'🔴 ')+'<strong>'+a.title+'</strong></td>' +
-      '<td style="font-size:12px;color:var(--tm)">'+a.date+'</td>' +
+  badge.innerText = unread || ''; badge.style.display = unread ? '' : 'none';
+  document.getElementById('k-alerts').innerText = unread;
+  document.getElementById('alerts-tb').innerHTML = data.length ? data.map(function(a){
+    var bg = a.pri==='CRITIQUE'?'var(--red)':a.pri==='HAUTE'?'var(--amber)':'var(--s4)';
+    var tc = a.pri==='NORMALE'?'var(--tp)':'#fff';
+    return '<tr style="opacity:'+(a.read?.7:1)+';background:'+(a.read?'transparent':'rgba(0,212,255,.02)')+'">' +
+      '<td><span style="background:'+bg+';color:'+tc+';padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap">'+a.pri+'</span></td>' +
+      '<td>'+(a.read?'':'<span style="color:var(--red)">●</span> ')+'<strong>'+a.title+'</strong></td>' +
+      '<td style="font-size:12px;color:var(--tm);white-space:nowrap">'+a.date+'</td>' +
       '<td><span style="font-size:12px;color:'+(a.read?'var(--tm)':'var(--amber)')+'">'+( a.read?'Lu':'Non lu')+'</span></td>' +
-      '<td><button class="gbtn" style="margin-right:6px" onclick="openAlertModal('+a.id+')">Détail</button>' +
-        '<button class="gbtn" onclick="toggleRead('+a.id+')">'+(a.read?'Non lu':'✓ Lu')+'</button></td>' +
-    '</tr>';
-  }).join('');
+      '<td style="white-space:nowrap">' +
+        '<button class="gbtn" style="margin-right:6px" onclick="openAlertModal('+a.id+')">Détail</button>' +
+        '<button class="gbtn" onclick="toggleRead('+a.id+')">'+(a.read?'⟳ Non lu':'✓ Lu')+'</button>' +
+      '</td></tr>';
+  }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--tm);padding:30px">Aucune alerte pour ce filtre.</td></tr>';
 }
 function toggleRead(id){
-  var a = ALERTS.filter(function(x){ return x.id === id; })[0];
-  if(a){ a.read = !a.read; renderAlerts(); toast(a.read ? 'Marqué comme lu' : 'Marqué non lu'); }
+  var a = ALERTS.filter(function(x){ return x.id===id; })[0];
+  if(a){ a.read=!a.read; renderAlerts(); toast(a.read?'Marqué comme lu':'Marqué non lu'); }
 }
 function openAlertModal(id){
-  var a = ALERTS.filter(function(x){ return x.id === id; })[0];
+  var a = ALERTS.filter(function(x){ return x.id===id; })[0];
   if(!a) return;
-  var bg = a.pri === 'CRITIQUE' ? 'var(--red)' : a.pri === 'HAUTE' ? 'var(--amber)' : 'var(--s4)';
-  var tc = a.pri === 'NORMALE' ? 'var(--tp)' : '#fff';
-  var artBtn = a.art ? '<button class="gbtn" style="margin-bottom:12px" onclick="closeAlertModal();openArt('+a.art+')">📰 Article associé</button>' : '';
+  var bg = a.pri==='CRITIQUE'?'var(--red)':a.pri==='HAUTE'?'var(--amber)':'var(--s4)';
+  var tc = a.pri==='NORMALE'?'var(--tp)':'#fff';
   document.getElementById('alert-body').innerHTML =
-    '<div style="padding:24px">' +
-      '<div style="display:flex;gap:8px;margin-bottom:14px">' +
+    '<div class="mpad">' +
+      '<div class="mhdr">' +
         '<span style="background:'+bg+';color:'+tc+';padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700">'+a.pri+'</span>' +
         '<span style="background:var(--s3);padding:3px 10px;border-radius:4px;font-size:12px">'+(a.read?'Lu':'Non lu')+'</span>' +
       '</div>' +
-      '<h2 style="font-size:17px;font-weight:700;margin-bottom:10px">'+a.title+'</h2>' +
+      '<div class="mtitle">'+a.title+'</div>' +
       '<div style="font-size:12px;color:var(--tm);margin-bottom:14px">🕐 '+a.date+'</div>' +
-      '<div style="background:var(--s3);border-radius:8px;padding:16px;border-left:3px solid '+bg+';margin-bottom:14px">' +
-        '<p style="font-size:14px;line-height:1.7">'+a.desc+'</p>' +
-      '</div>' +
-      artBtn +
-      '<div style="display:flex;gap:10px">' +
-        '<button class="gbtn" onclick="toggleRead('+a.id+');closeAlertModal()">'+(a.read?'Marquer non lu':'✓ Marquer lu')+'</button>' +
+      '<div class="msynth" style="border-left-color:'+bg+'"><div class="msynth-label">DESCRIPTION</div><p>'+a.desc+'</p></div>' +
+      '<div class="mfooter">' +
+        '<button class="gbtn" onclick="toggleRead('+a.id+');closeAlertModal()">'+(a.read?'⟳ Marquer non lu':'✓ Marquer lu')+'</button>' +
         '<button class="gbtn" onclick="toast(\'Alerte archivée\');closeAlertModal()">📁 Archiver</button>' +
       '</div>' +
     '</div>';
@@ -661,107 +1217,117 @@ function closeAlertModal(){ document.getElementById('alert-modal').classList.rem
 function openRptModal(){ document.getElementById('rpt-modal').classList.add('on'); }
 function closeRptModal(){ document.getElementById('rpt-modal').classList.remove('on'); }
 function createReport(){
-  var title = document.getElementById('rpt-title').value.trim();
+  var title = (document.getElementById('rpt-title').value||'').trim();
   var s = document.getElementById('rpt-start').value;
   var e = document.getElementById('rpt-end').value;
   var err = document.getElementById('rpt-err');
   if(!title){ err.innerText='Veuillez saisir un titre.'; err.style.display='block'; return; }
   if(!s||!e){ err.innerText='Veuillez sélectionner les dates.'; err.style.display='block'; return; }
+  if(new Date(s) > new Date(e)){ err.innerText='La date de début doit être avant la date de fin.'; err.style.display='block'; return; }
   err.style.display='none';
-  var cats = [];
-  document.querySelectorAll('#rpt-modal input[type=checkbox]:checked').forEach(function(c){ cats.push(c.value); });
+  var cats = Array.from(document.querySelectorAll('#rpt-cats input:checked')).map(function(c){ return c.value; }).join(', ');
   var today = new Date().toLocaleDateString('fr-FR');
   document.getElementById('reports-tb').insertAdjacentHTML('afterbegin',
-    '<tr><td><strong>'+title+'</strong></td><td>'+s+' – '+e+'</td><td>'+(cats.join(', ')||'Toutes')+'</td><td>'+today+'</td><td><button class="gbtn" onclick="exportPDF()">📥 PDF</button></td></tr>');
+    '<tr><td><strong>'+title+'</strong></td><td>'+s+' – '+e+'</td><td>'+(cats||'Toutes')+'</td><td>'+today+'</td><td><span style="color:var(--green)">● Finalisé</span></td><td><button class="gbtn" onclick="exportPDF()">📥 PDF</button></td></tr>');
+  addAudit(CURRENT_USER,'Génération rapport : '+title,'SUCCESS');
   closeRptModal();
-  toast('Rapport "'+title+'" généré','success');
-}
-
-// ===== RECHERCHE =====
-function doSearch(){
-  var q = document.getElementById('s-inp').value.trim().toLowerCase();
-  var src = document.getElementById('s-src').value;
-  var meta = document.getElementById('s-meta');
-  var res = document.getElementById('s-results');
-  if(!q){ res.innerHTML='<div class="card" style="color:var(--tm);text-align:center;padding:30px">Saisissez un terme pour rechercher.</div>'; meta.innerText=''; return; }
-  var results = [];
-  if(src==='all'||src==='article') FEED.filter(function(a){ return a.title.toLowerCase().indexOf(q)>=0||a.summary.toLowerCase().indexOf(q)>=0||a.source.toLowerCase().indexOf(q)>=0; }).forEach(function(a){ results.push({type:'article',data:a}); });
-  if(src==='all'||src==='social') SOCIAL.filter(function(s){ return s.text.toLowerCase().indexOf(q)>=0||s.name.toLowerCase().indexOf(q)>=0; }).forEach(function(s){ results.push({type:'social',data:s}); });
-  if(src==='all'||src==='video') VIDEOS.filter(function(v){ return v.title.toLowerCase().indexOf(q)>=0||v.channel.toLowerCase().indexOf(q)>=0; }).forEach(function(v){ results.push({type:'video',data:v}); });
-  meta.innerText = results.length ? results.length + ' résultat(s) pour "' + q + '"' : '';
-  if(!results.length){ res.innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--tm)">Aucun résultat pour "'+q+'"</div>'; return; }
-  res.innerHTML = results.map(function(r){
-    if(r.type==='article') return articleHTML(r.data);
-    if(r.type==='social'){ var s=r.data; return '<div class="acard"><span class="plat '+(PLATCLS[s.platform]||'')+'" style="margin-bottom:8px;display:inline-block">'+s.platform+'</span><p style="margin-bottom:8px">'+s.text+'</p><div style="font-size:12px;color:var(--tm)">'+s.name+' · '+s.time+'</div></div>'; }
-    var v=r.data; return '<div class="acard"><span style="background:var(--red);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-bottom:8px;display:inline-block">🎬 Vidéo</span><h3>'+v.title+'</h3><div style="font-size:12px;color:var(--tm);margin-top:6px">'+v.channel+' · '+v.dur+' · '+v.views+' vues</div></div>';
-  }).join('');
-}
-
-// ===== CARTE =====
-var mapInst = null;
-function initMap(){
-  if(mapInst){ try{ mapInst.invalidateSize(); }catch(e){} return; }
-  mapInst = L.map('map-leaflet').setView([27,10],3);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(mapInst);
-  [{lat:31.79,lng:-7.09,name:'Maroc',count:1240,c:'#FF3366',imp:'CRITIQUE'},{lat:46.23,lng:2.21,name:'France',count:820,c:'#00D4FF',imp:'HAUTE'},{lat:28.03,lng:1.66,name:'Algérie',count:610,c:'#A78BFA',imp:'HAUTE'},{lat:37.09,lng:-95.71,name:'USA',count:580,c:'#00D4FF',imp:'HAUTE'},{lat:33.89,lng:9.54,name:'Tunisie',count:320,c:'#00FF88',imp:'NORMALE'},{lat:40.46,lng:-3.75,name:'Espagne',count:290,c:'#FFB800',imp:'NORMALE'},{lat:38.96,lng:35.24,name:'Turquie',count:180,c:'#00D4FF',imp:'NORMALE'},{lat:25.35,lng:51.18,name:'Qatar',count:150,c:'#FFB800',imp:'NORMALE'}]
-  .forEach(function(m){
-    L.circleMarker([m.lat,m.lng],{radius:Math.max(8,Math.min(22,m.count/55)),fillColor:m.c,color:m.c,weight:2,opacity:.9,fillOpacity:.7}).addTo(mapInst)
-    .bindPopup('<strong style="font-size:14px">'+m.name+'</strong><br>'+m.count+' articles<br><span style="background:'+m.c+';color:#fff;padding:2px 6px;border-radius:4px;font-size:11px">'+m.imp+'</span>');
-  });
+  toast('Rapport "'+title+'" créé avec succès','success');
 }
 
 // ===== SOURCES =====
 function renderSources(){
-  document.getElementById('src-tb').innerHTML = SOURCES.map(function(s){
-    var pct = parseFloat(s.rel)*100;
-    var fc = parseFloat(s.rel)>.9?'var(--green)':parseFloat(s.rel)>.75?'var(--amber)':'var(--red)';
-    var sc = s.status==='Active'?'var(--green)':s.status==='Error'?'var(--red)':'var(--amber)';
-    return '<tr><td><strong>'+s.name+'</strong></td><td><span class="tag">'+s.type+'</span></td><td>'+s.lang+'</td><td>'+s.country+'</td>' +
-      '<td><div style="display:flex;align-items:center;gap:8px"><div class="pbar" style="width:60px"><div class="pfill" style="width:'+pct+'%;background:'+fc+'"></div></div><span style="font-size:12px">'+s.rel+'</span></div></td>' +
-      '<td style="font-size:12px;color:var(--tm)">'+s.freq+'</td><td style="font-weight:600">'+s.count+'</td>' +
-      '<td><span style="color:'+sc+'">● '+s.status+'</span></td></tr>';
+  var label = document.getElementById('src-count-label');
+  if(label) label.innerText = '— '+RSS_SOURCES.length+' sources configurées';
+  var tb = document.getElementById('src-tb');
+  if(!tb) return;
+  tb.innerHTML = RSS_SOURCES.map(function(s){
+    var count = RSS_COUNTS[s.name] || 0;
+    var ok = count > 0;
+    var pct = Math.min(s.rel * 100, 100);
+    var fc = s.rel > 0.9 ? 'var(--green)' : s.rel > 0.75 ? 'var(--amber)' : 'var(--red)';
+    var shortUrl = s.url.replace('https://','').split('/')[0];
+    return '<tr>' +
+      '<td><strong>'+s.name+'</strong></td>' +
+      '<td><span class="tag">RSS</span></td>' +
+      '<td><span class="bd '+langClass(s.lang)+'">'+s.lang+'</span></td>' +
+      '<td><a href="'+s.url+'" target="_blank" style="font-size:11px;color:var(--tm)">'+shortUrl+'</a></td>' +
+      '<td><div style="display:flex;align-items:center;gap:8px"><div class="pbar" style="width:60px"><div class="pfill" style="width:'+pct+'%;background:'+fc+'"></div></div><span style="font-size:12px">'+s.rel.toFixed(2)+'</span></div></td>' +
+      '<td style="font-weight:600;color:'+(ok?'var(--tp)':'var(--tm)')+'">'+count+'</td>' +
+      '<td><span style="color:'+(ok?'var(--green)':'var(--red)')+'">● '+(ok?'Active':'Hors ligne')+'</span></td>' +
+    '</tr>';
   }).join('');
 }
 
 // ===== DASHBOARD =====
 function renderDashboard(){
-  var trends = [['Maroc',1240,'var(--cyan)'],['Sahara Occidental',980,'var(--red)'],['Diplomatie',820,'var(--purple)'],['Sécurité régionale',760,'var(--amber)'],['Sahel',610,'var(--red)'],['Investissements',480,'var(--green)'],['France-Maroc',390,'var(--cyan)'],['ONU',320,'var(--purple)']];
-  document.getElementById('dash-trends').innerHTML = trends.map(function(t,i){
-    return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">'+(i+1)+'. '+t[0]+'</span><span style="font-weight:700;color:'+t[2]+'">'+t[1].toLocaleString()+'</span></div>';
+  var trends = [
+    ['Maroc / Maghreb', Math.max(ALL_ARTICLES.length > 0 ? Math.floor(ALL_ARTICLES.length*0.35) : 450, 120), 'var(--cyan)'],
+    ['Sécurité régionale', Math.max(ALL_ARTICLES.length > 0 ? Math.floor(ALL_ARTICLES.length*0.22) : 280, 80), 'var(--red)'],
+    ['Diplomatie', Math.max(ALL_ARTICLES.length > 0 ? Math.floor(ALL_ARTICLES.length*0.18) : 230, 60), 'var(--purple)'],
+    ['Économie', Math.max(ALL_ARTICLES.length > 0 ? Math.floor(ALL_ARTICLES.length*0.12) : 150, 40), 'var(--amber)'],
+    ['Sahel / Afrique', Math.max(ALL_ARTICLES.length > 0 ? Math.floor(ALL_ARTICLES.length*0.08) : 95, 30), 'var(--amber)'],
+    ['International', Math.max(ALL_ARTICLES.length > 0 ? Math.floor(ALL_ARTICLES.length*0.05) : 60, 20), 'var(--green)']
+  ];
+  var tEl = document.getElementById('dash-trends');
+  if(tEl) tEl.innerHTML = trends.map(function(t,i){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-size:13px">'+(i+1)+'. '+t[0]+'</span>' +
+      '<span style="font-weight:700;font-size:13px;color:'+t[2]+'">'+t[1].toLocaleString('fr-FR')+'</span>' +
+    '</div>';
   }).join('');
-  document.getElementById('dash-alerts').innerHTML = ALERTS.slice(0,4).map(function(a){
+  var aEl = document.getElementById('dash-alerts');
+  if(aEl) aEl.innerHTML = ALERTS.slice(0,5).map(function(a){
     var c = a.pri==='CRITIQUE'?'var(--red)':a.pri==='HAUTE'?'var(--amber)':'var(--green)';
-    return '<div onclick="go(\'alerts\',document.querySelector(\'.nv[onclick*=alerts]\')||null)" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer">' +
-      '<span style="width:8px;height:8px;border-radius:50%;background:'+c+';flex-shrink:0"></span>' +
-      '<span style="flex:1;font-size:13px;'+(a.read?'color:var(--tm)':'')+'">'+a.title+'</span>' +
-      '<span style="font-size:11px;color:var(--ts)">'+a.pri+'</span>' +
+    return '<div onclick="go(\'alerts\',document.querySelector(\'.nv[onclick*=\\\'alerts\\\']\'))" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer">' +
+      '<span style="width:8px;height:8px;border-radius:50%;background:'+c+';flex-shrink:0;display:inline-block"></span>' +
+      '<span style="flex:1;font-size:13px;'+(a.read?'color:var(--tm)':'font-weight:500')+'">'+a.title+'</span>' +
+      '<span style="font-size:10px;color:var(--ts)">'+a.pri+'</span>' +
     '</div>';
   }).join('');
 }
 
 // ===== CHARTS =====
+var CH_VOL, CH_LANG, CH_SRC, CH_SYS;
+function chartColors(){
+  var t = document.documentElement.dataset.theme;
+  return {tick: t==='light'?'rgba(26,32,44,.5)':'rgba(232,240,254,.4)', grid: t==='light'?'rgba(0,100,200,.06)':'rgba(0,212,255,.06)'};
+}
 function initCharts(){
-  var copts = {color:'rgba(232,240,254,.4)'};
-  var gopts = {color:'rgba(0,212,255,.06)'};
-  new Chart(document.getElementById('ch-vol'),{
+  var cc = chartColors();
+  CH_VOL = new Chart(document.getElementById('ch-vol'),{
     type:'line',
-    data:{labels:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],datasets:[{label:'Articles',data:[856,1120,980,1340,1245,1100,1310],borderColor:'#00D4FF',backgroundColor:'rgba(0,212,255,.08)',tension:.4,fill:true}]},
-    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:copts,grid:gopts},y:{ticks:copts,grid:gopts}}}
+    data:{labels:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],datasets:[{label:'Articles',data:[856,1120,980,1340,1245,1100,1310],borderColor:'#00D4FF',backgroundColor:'rgba(0,212,255,.08)',tension:.4,fill:true,pointBackgroundColor:'#00D4FF'}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:cc.tick},grid:{color:cc.grid}},y:{ticks:{color:cc.tick},grid:{color:cc.grid}}}}
   });
-  new Chart(document.getElementById('ch-lang'),{
+  CH_LANG = new Chart(document.getElementById('ch-lang'),{
     type:'doughnut',
-    data:{labels:['Arabe','Français','Anglais','Espagnol'],datasets:[{data:[38,32,22,8],backgroundColor:['#A78BFA','#00D4FF','#00FF88','#FFB800']}]},
-    options:{maintainAspectRatio:false,plugins:{legend:{labels:{color:'rgba(232,240,254,.7)'}}}}
+    data:{labels:['Arabe (AR)','Français (FR)','Anglais (EN)','Espagnol (ES)'],datasets:[{data:[38,32,22,8],backgroundColor:['#A78BFA','#00D4FF','#00FF88','#FFB800'],borderWidth:0}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{labels:{color:cc.tick==='light'?'#1A202C':'rgba(232,240,254,.7)',font:{size:11}}}}}
   });
 }
+function updateCharts(){
+  if(!CH_LANG || !ALL_ARTICLES.length) return;
+  var counts = {AR:0,FR:0,EN:0,ES:0,PT:0};
+  ALL_ARTICLES.forEach(function(a){ if(counts[a.lang]!==undefined) counts[a.lang]++; });
+  CH_LANG.data.datasets[0].data = [counts.AR,counts.FR,counts.EN,counts.ES+counts.PT];
+  CH_LANG.update();
+}
 function initSysChart(){
-  var copts = {color:'rgba(232,240,254,.4)'};
-  var gopts = {color:'rgba(0,212,255,.06)'};
-  new Chart(document.getElementById('ch-sys'),{
+  if(!document.getElementById('ch-src')) return;
+  var srcNames = RSS_SOURCES.map(function(s){ return s.name.split(' ')[0]; });
+  var srcData = RSS_SOURCES.map(function(s){ return RSS_COUNTS[s.name]||0; });
+  var cc = chartColors();
+  CH_SRC = new Chart(document.getElementById('ch-src'),{
     type:'bar',
-    data:{labels:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],datasets:[{label:'Requêtes',data:[8400,11200,9800,13400,12450,10100,13100],backgroundColor:'rgba(0,212,255,.4)',borderColor:'#00D4FF',borderWidth:1}]},
-    options:{maintainAspectRatio:false,plugins:{legend:{labels:{color:'rgba(232,240,254,.7)'}}},scales:{x:{ticks:copts,grid:gopts},y:{ticks:copts,grid:gopts}}}
+    data:{labels:srcNames,datasets:[{label:'Articles',data:srcData,backgroundColor:'rgba(0,212,255,.5)',borderColor:'#00D4FF',borderWidth:1}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:cc.tick},grid:{color:cc.grid}},y:{ticks:{color:cc.tick},grid:{color:cc.grid}}}}
   });
+}
+function updateStatPage(){
+  var sa = document.getElementById('stat-articles');
+  var ss = document.getElementById('stat-sources');
+  if(sa) sa.innerText = ALL_ARTICLES.length || '—';
+  if(ss) ss.innerText = Object.values(RSS_COUNTS).filter(function(c){ return c>0; }).length + '/' + RSS_SOURCES.length;
 }
 
 // ===== EXPORTS =====
@@ -769,29 +1335,37 @@ function dl(content, filename, type){
   var blob = new Blob([content],{type:type});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
-  a.href = url; a.download = filename;
+  a.href=url; a.download=filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 function exportCSV(){
-  var h = ['Titre','Source','Langue','Pays','Catégorie','Importance','Sentiment','Date'];
-  var rows = FEED.map(function(a){ return [a.title,a.source,a.lang,a.country,a.cat,a.imp,a.sent,a.time]; });
-  var csv = [h].concat(rows).map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  if(!ALL_ARTICLES.length){ toast('Aucun article à exporter. Actualisez le flux.','warning'); return; }
+  var h = ['Titre','Source','Langue','Pays','Catégorie','Importance','Date','Lien'];
+  var rows = ALL_ARTICLES.slice(0,500).map(function(a){ return [a.title,a.source,a.lang,a.country,a.cat,a.imp,a.time,a.link||'']; });
+  var csv = [h].concat(rows).map(function(r){ return r.map(function(v){ return '"'+String(v||'').replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
   dl('\uFEFF'+csv,'vigia-articles-'+new Date().toISOString().slice(0,10)+'.csv','text/csv;charset=utf-8');
-  toast('Fichier CSV téléchargé','success');
+  addAudit(CURRENT_USER,'Export CSV — '+ALL_ARTICLES.length+' articles','SUCCESS');
+  toast('CSV exporté ('+ALL_ARTICLES.length+' articles)','success');
 }
 function exportJSON(){
-  dl(JSON.stringify({exported_at:new Date().toISOString(),platform:'VIGIA v2.0',note:'Données de démonstration',articles:FEED,alerts:ALERTS},null,2),'vigia-export-'+new Date().toISOString().slice(0,10)+'.json','application/json');
-  toast('Fichier JSON téléchargé','success');
+  var data = {exported_at:new Date().toISOString(),platform:'VIGIA v2.0',article_count:ALL_ARTICLES.length,sources:RSS_SOURCES.map(function(s){ return {name:s.name,count:RSS_COUNTS[s.name]||0}; }),articles:ALL_ARTICLES.slice(0,500)};
+  dl(JSON.stringify(data,null,2),'vigia-export-'+new Date().toISOString().slice(0,10)+'.json','application/json');
+  addAudit(CURRENT_USER,'Export JSON','SUCCESS');
+  toast('JSON exporté','success');
 }
-function exportPDF(){ window.print(); toast('Impression lancée'); }
+function exportPDF(){ window.print(); toast('Impression / PDF lancée'); }
 
-// ===== INITIALISATION =====
-renderFeed(FEED);
-renderSocial(SOCIAL);
-renderVideos();
-renderSources();
-renderAlerts();
+// ===== ENTER KEY LOGIN =====
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    var loginView = document.getElementById('v-login');
+    if(loginView && !loginView.classList.contains('hidden')){
+      doLogin();
+    }
+  }
+});
 </script>
+
 </body>
 </html>
