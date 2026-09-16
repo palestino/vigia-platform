@@ -58,7 +58,8 @@
     .theme-toggle { background: transparent; border: 1px solid var(--border); color: var(--tp); padding: 5px 10px; border-radius: 5px; cursor: pointer; }
     .page { display: none; min-height: calc(100vh - 60px); padding: 20px; padding-bottom: 40px; }
     .page.active { display: block; }
-    .login-container { display: flex; height: 100vh; align-items: center; justify-content: center; }
+    .login-container { display: none; height: 100vh; align-items: center; justify-content: center; }
+    .login-container.active { display: flex; }
     .login-box { background: var(--s1); padding: 40px; border-radius: 10px; border: 1px solid var(--border); width: 400px; text-align: center; }
     .input-group { margin-bottom: 20px; text-align: left; }
     .input-group input { width: 100%; padding: 10px; background: var(--s2); border: 1px solid var(--border); color: var(--tp); border-radius: 5px; margin-top: 5px; }
@@ -487,7 +488,8 @@
         document.getElementById('p-login').classList.remove('active');
         document.getElementById('app-shell').style.display = 'flex';
         showPage('p-dashboard');
-        renderDashboard();
+        if (!window.chartsInit) { try { initCharts(); } catch(e){} window.chartsInit = true; }
+        try { renderDashboard(); } catch(e) {}
       } else {
         document.getElementById('login-err').style.display = 'block';
       }
@@ -499,7 +501,7 @@
       document.getElementById('p-login').classList.add('active');
       document.getElementById('p-dashboard').classList.add('active');
       window.chartsInit = false;
-      mapInstance = null;
+      try { if(mapInstance){mapInstance.remove();} } catch(e){} mapInstance = null;
       showToast('Vous avez été déconnecté');
     }
 
